@@ -9,8 +9,8 @@ import MyToken  # содержит токен
 # testToken = 'тут токен'
 # При разработке использеум test, для работы my.
 # в git его игнорируем, а в место пушим зашифрованный архив.
-# API_TOKEN = MyToken.myToken # рабочий бот
-API_TOKEN = MyToken.testToken # тестовый бот
+API_TOKEN = MyToken.myToken # рабочий бот
+# API_TOKEN = MyToken.testToken # тестовый бот
 
 # Initialize bot and dispatcher
 bot = Bot(token=API_TOKEN)
