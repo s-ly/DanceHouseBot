@@ -14,6 +14,7 @@ from aiogram.dispatcher.filters import Text
 from aiogram.utils.markdown import italic, code
 
 import Texts           # мой модуль, хранит текст
+import func            # мой модуль, функции
 
 
 
@@ -23,8 +24,8 @@ import Texts           # мой модуль, хранит текст
 # testToken = 'тут токен'
 # При разработке использеум test, для работы my.
 # в git его игнорируем, а в место пушим зашифрованный архив.
-API_TOKEN = MyToken.myToken # рабочий бот
-# API_TOKEN = MyToken.testToken # тестовый бот
+# API_TOKEN = MyToken.myToken # рабочий бот
+API_TOKEN = MyToken.testToken # тестовый бот
 
 # Initialize bot and dispatcher
 bot = Bot(token=API_TOKEN)
@@ -39,7 +40,18 @@ keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 button_about = KeyboardButton('О нас')
 button_price = KeyboardButton('Прайс-лист')
 button_contact = KeyboardButton('Контакты')
-keyboard.add(button_about, button_price, button_contact)
+button_timetable = KeyboardButton('Расписание')
+keyboard.add(button_about, button_price, button_contact, button_timetable)
+
+
+
+
+@dp.message_handler(Text(equals="Расписание"))
+async def buttonTimetableMess(message: types.Message):
+    """ Отвечает на кнопку: button_timetable"""
+    photo = func.getPhoto()
+    await bot.send_photo(message.from_user.id, photo)
+
 
 
 
