@@ -15,6 +15,8 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 # Мой класс для работы с состояниями пользователя
 from app import StateGroupFSM 
 
+import sqlite3 as sql
+
 
 
 
@@ -42,3 +44,18 @@ async def runAdmin(message: types.Message, keyboard_admin):
         await message.answer('Вход в админку', reply_markup=keyboard_admin)
     else:
         await message.answer('Только для админов')
+
+
+
+
+def ExecuteSQL(key_id=1):
+    """Выполняет SQL запрос, возвращает текст из таблицы."""
+    SQL = f"SELECT message FROM texts WHERE id = {key_id}"
+    with sql.connect('DanceHouseBot.db') as connect_db:
+        cursor_db = connect_db.cursor()
+        cursor_db.execute(SQL)
+        SQL_result = cursor_db.fetchall()
+    text_SQL_result = SQL_result[0][0]
+    return text_SQL_result
+
+# ExecuteSQL(2)

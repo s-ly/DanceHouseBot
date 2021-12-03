@@ -24,7 +24,7 @@ from aiogram.dispatcher.filters import Text
 # для форматирования
 from aiogram.utils.markdown import italic, code
 
-import Texts           # мой модуль, хранит текст
+# import Texts           # мой модуль, хранит текст
 import func            # мой модуль, функции
 
 
@@ -73,7 +73,8 @@ async def start(message: types.Message):
     """ Отвечает на команду: /start когда состояние пользователя не установлено.
     Устанавливает состояние пользователя на user_state_default."""
     await StateGroupFSM.user_state_default.set()
-    await message.answer(Texts.text_start, reply_markup=keyboard)    
+    # await message.answer(Texts.text_start, reply_markup=keyboard)  
+    await message.answer(func.ExecuteSQL(4), reply_markup=keyboard)  
 
 
 
@@ -119,8 +120,7 @@ async def buttonTimetableMess(message: types.Message):
 @dp.message_handler(Text(equals="О нас"), state=StateGroupFSM.user_state_default)
 async def buttonAboutMess(message: types.Message):
     """ Отвечает на кнопку: utton_about"""
-    # reply_markup=keyboard - показывает клавиатуру
-    await message.answer(Texts.text_about, reply_markup=keyboard)
+    await message.answer(func.ExecuteSQL(1), reply_markup=keyboard)
 
 
 
@@ -130,7 +130,8 @@ async def buttonPriceMess(message: types.Message):
     """ Отвечает на кнопку: utton_about"""
     # reply_markup=keyboard - показывает клавиатуру
     # code(...) и parse_mode=... форматируют текст моноширно
-    await message.answer(code(Texts.text_price), parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=keyboard)
+    await message.answer(code(func.ExecuteSQL(2)), parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=keyboard)
+    # await message.answer(func.ExecuteSQL(1), reply_markup=keyboard)
 
 
 
@@ -139,7 +140,8 @@ async def buttonPriceMess(message: types.Message):
 async def buttonContactMess(message: types.Message):
     """ Отвечает на кнопку: utton_about"""
     # reply_markup=keyboard - показывает клавиатуру
-    await message.answer(Texts.text_contact, reply_markup=keyboard)
+    await message.answer(func.ExecuteSQL(3), reply_markup=keyboard)
+    
 
 
 
