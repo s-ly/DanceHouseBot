@@ -47,6 +47,9 @@ dp = Dispatcher(bot, storage=storage)
 class StateGroupFSM(StatesGroup):
     user_state_admin = State()  # для админки
     user_state_default = State()  # все остальные
+    user_state_admin_edit_about = State()  # для админки, жду ввод текста 'О нас'
+    user_state_admin_edit_price = State()  # для админки, жду ввод текста 'Прайс-лист'
+    user_state_admin_edit_contact = State()  # для админки, жду ввод текста 'Контакты'
 
 # создаём коавиатуру и добавляем кнопки
 # resize_keyboard=True - уменьшает кнопки
@@ -63,7 +66,16 @@ keyboard.add(button_about, button_price, button_contact, button_timetable)
 # Клавиатура для админки
 keyboard_admin = ReplyKeyboardMarkup(resize_keyboard=True)
 button_exit_admin = KeyboardButton('Выход из админки')
-keyboard_admin.add(button_exit_admin)
+button_show_about = KeyboardButton('Показать: О нас')
+button_show_price = KeyboardButton('Показать: Прайс-лист')
+button_show_contact = KeyboardButton('Показать: Контакты')
+button_edit_about = KeyboardButton('Редактировать: О нас')
+button_edit_price = KeyboardButton('Редактировать: Прайс-лист')
+button_edit_contact = KeyboardButton('Редактировать: Контакты')
+keyboard_admin.add(button_show_about, button_edit_about,
+button_show_price, button_edit_price,
+button_show_contact, button_edit_contact,
+button_exit_admin)
 
 
 
@@ -73,7 +85,6 @@ async def start(message: types.Message):
     """ Отвечает на команду: /start когда состояние пользователя не установлено.
     Устанавливает состояние пользователя на user_state_default."""
     await StateGroupFSM.user_state_default.set()
-    # await message.answer(Texts.text_start, reply_markup=keyboard)  
     await message.answer(func.ExecuteSQL(4), reply_markup=keyboard)  
 
 
@@ -106,7 +117,6 @@ async def buttonTimetableMess(message: types.Message, state: FSMContext):
 
 
 
-
 @dp.message_handler(Text(equals="Расписание"), state=StateGroupFSM.user_state_default)
 async def buttonTimetableMess(message: types.Message):
     """ Отвечает на кнопку: button_timetable"""
@@ -116,32 +126,94 @@ async def buttonTimetableMess(message: types.Message):
 
 
 
-
+@dp.message_handler(Text(equals="Показать: О нас"), state=StateGroupFSM.user_state_admin)
 @dp.message_handler(Text(equals="О нас"), state=StateGroupFSM.user_state_default)
 async def buttonAboutMess(message: types.Message):
-    """ Отвечает на кнопку: utton_about"""
-    await message.answer(func.ExecuteSQL(1), reply_markup=keyboard)
+    """ Отвечает на кнопку 'О нас' и 'Показать: О нас' """
+    await message.answer(func.ExecuteSQL(1))
 
 
 
 
+@dp.message_handler(Text(equals="Показать: Прайс-лист"), state=StateGroupFSM.user_state_admin)
 @dp.message_handler(Text(equals="Прайс-лист"), state=StateGroupFSM.user_state_default)
 async def buttonPriceMess(message: types.Message):
-    """ Отвечает на кнопку: utton_about"""
-    # reply_markup=keyboard - показывает клавиатуру
-    # code(...) и parse_mode=... форматируют текст моноширно
-    await message.answer(code(func.ExecuteSQL(2)), parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=keyboard)
-    # await message.answer(func.ExecuteSQL(1), reply_markup=keyboard)
+    """ Отвечает на кнопку 'Прайс-лист' и 'Показать: Прайс-лист' 
+    code(...) и parse_mode=... форматируют текст моноширно. """
+    await message.answer(code(func.ExecuteSQL(2)), parse_mode=types.ParseMode.MARKDOWN_V2)
 
 
 
 
+@dp.message_handler(Text(equals="Показать: Контакты"), state=StateGroupFSM.user_state_admin)
 @dp.message_handler(Text(equals="Контакты"), state=StateGroupFSM.user_state_default)
 async def buttonContactMess(message: types.Message):
-    """ Отвечает на кнопку: utton_about"""
-    # reply_markup=keyboard - показывает клавиатуру
-    await message.answer(func.ExecuteSQL(3), reply_markup=keyboard)
-    
+    """ Отвечает на кнопку 'Контакты' и 'Показать: Контакты' """
+    await message.answer(func.ExecuteSQL(3))
+
+
+
+
+@dp.message_handler(Text(equals="Редактировать: О нас"), state=StateGroupFSM.user_state_admin)
+async def buttonContactMess(message: types.Message):
+    """ Отвечает на кнопку 'Редактировать: О нас'. 
+    Переводит пользователя администратора в состояние: жду ввод текста 'О нас'. """
+    await message.answer('Редактирование пункта: О нас. Введите новый текст.')
+    await StateGroupFSM.user_state_admin_edit_about.set()
+
+
+
+
+@dp.message_handler(state=StateGroupFSM.user_state_admin_edit_about)
+async def buttonContactMess(message: types.Message):
+    """ Отвечает на любые сообщения в состоятии:  жду ввод текста 'О нас'. 
+    Возвращает пользователя администратора в состояние: admin. """
+    await message.answer(func.ExecuteSQL_update(1, message.text))
+    await message.answer('Пункт Отредактирован')
+    await StateGroupFSM.user_state_admin.set()
+
+
+
+
+@dp.message_handler(Text(equals="Редактировать: Прайс-лист"), state=StateGroupFSM.user_state_admin)
+async def buttonContactMess(message: types.Message):
+    """ Отвечает на кнопку 'Редактировать: Прайс-лист'. 
+    Переводит пользователя администратора в состояние: жду ввод текста 'Редактировать: Прайс-лист'. """
+    await message.answer('Редактирование пункта: Прайс-лист. Введите новый текст.')
+    await StateGroupFSM.user_state_admin_edit_price.set()
+
+
+
+
+@dp.message_handler(state=StateGroupFSM.user_state_admin_edit_price)
+async def buttonContactMess(message: types.Message):
+    """ Отвечает на любые сообщения в состоятии:  жду ввод текста 'Прайс-лист'. 
+    Возвращает пользователя администратора в состояние: admin. """
+    await message.answer(func.ExecuteSQL_update(2, message.text))
+    await message.answer('Пункт Отредактирован')
+    await StateGroupFSM.user_state_admin.set()
+
+
+
+
+
+@dp.message_handler(Text(equals="Редактировать: Контакты"), state=StateGroupFSM.user_state_admin)
+async def buttonContactMess(message: types.Message):
+    """ Отвечает на кнопку 'Редактировать: Контакты'. 
+    Переводит пользователя администратора в состояние: жду ввод текста 'Редактировать: Контакты'. """
+    await message.answer('Редактирование пункта: Контакты. Введите новый текст.')
+    await StateGroupFSM.user_state_admin_edit_contact.set()
+
+
+
+
+@dp.message_handler(state=StateGroupFSM.user_state_admin_edit_contact)
+async def buttonContactMess(message: types.Message):
+    """ Отвечает на любые сообщения в состоятии:  жду ввод текста 'Контакты'. 
+    Возвращает пользователя администратора в состояние: admin. """
+    await message.answer(func.ExecuteSQL_update(3, message.text))
+    await message.answer('Пункт Отредактирован')
+    await StateGroupFSM.user_state_admin.set()
 
 
 
@@ -149,8 +221,8 @@ async def buttonContactMess(message: types.Message):
 
 @dp.message_handler(state=StateGroupFSM.user_state_default)
 async def all_mess_state_default(message: types.Message):
-    """ Отвечает на любые сообщения, если состояние не default"""
-    # reply_markup=keyboard - показывает клавиатуру
+    """ Отвечает на любые сообщения, если состояние не default.
+    reply_markup=keyboard - показывает клавиатуру """
     await message.answer('Используйте кнопки.', reply_markup=keyboard)
 
 

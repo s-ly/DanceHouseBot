@@ -48,8 +48,8 @@ async def runAdmin(message: types.Message, keyboard_admin):
 
 
 
-def ExecuteSQL(key_id=1):
-    """Выполняет SQL запрос, возвращает текст из таблицы."""
+def ExecuteSQL(key_id: int) -> str:
+    """Выполняет SQL запрос на чтение из столбца message, возвращает текст из таблицы."""
     SQL = f"SELECT message FROM texts WHERE id = {key_id}"
     with sql.connect('DanceHouseBot.db') as connect_db:
         cursor_db = connect_db.cursor()
@@ -58,4 +58,25 @@ def ExecuteSQL(key_id=1):
     text_SQL_result = SQL_result[0][0]
     return text_SQL_result
 
-# ExecuteSQL(2)
+
+
+
+def ExecuteSQL_update(key_id: int, message_text: str) -> str: 
+    """Выполняет SQL запрос на запись текста в таблицу в столбец message,
+    возвращает текст из таблицы.
+    Использует диспетчер контекста, запросу нужно давать по очереди.
+    key_id - номер строки в таблице.
+    fetchall() - присваивает результат выполнения SQL запроса.
+    Что бы получить результат в виде текста, делаю срез."""
+
+    SQL_1 = f"UPDATE texts SET message = '{message_text}' WHERE id = {key_id}"
+    SQL_2 = f"SELECT message FROM texts WHERE id = {key_id}"
+    with sql.connect('DanceHouseBot.db') as connect_db:
+        cursor_db = connect_db.cursor()
+        cursor_db.execute(SQL_1)
+        cursor_db.execute(SQL_2)
+        SQL_result = cursor_db.fetchall()
+    text_SQL_result = SQL_result[0][0]
+    return text_SQL_result
+
+
