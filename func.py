@@ -20,9 +20,21 @@ import sqlite3 as sql
 
 
 
-def getPhoto():    
-    """возвращает фото расписания занятий"""
-    photo = open('data/novoe_raspisanie.jpg', 'rb')
+# def getPhoto():    
+#     """возвращает фото расписания занятий"""
+#     photo = open('data/novoe_raspisanie.jpg', 'rb')
+#     return photo
+
+
+def ExecuteSQL_getImage():
+    """возвращает фото расписания занятий из базы данных."""
+    SQL = "SELECT img FROM images WHERE name = 'timetable'"
+    with sql.connect('DanceHouseBot.db') as connect_db:
+        connect_db.text_factory = bytes # так-как работаем с битами
+        cursor_db = connect_db.cursor()
+        cursor_db.execute(SQL)
+        SQL_result = cursor_db.fetchall()
+    photo = SQL_result[0][0]
     return photo
 
 

@@ -120,7 +120,8 @@ async def buttonTimetableMess(message: types.Message, state: FSMContext):
 @dp.message_handler(Text(equals="Расписание"), state=StateGroupFSM.user_state_default)
 async def buttonTimetableMess(message: types.Message):
     """ Отвечает на кнопку: button_timetable"""
-    photo = func.getPhoto()
+    # photo = func.getPhoto()
+    photo = func.ExecuteSQL_getImage()
     await bot.send_photo(message.from_user.id, photo)
 
 
