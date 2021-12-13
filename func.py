@@ -20,12 +20,6 @@ import sqlite3 as sql
 
 
 
-# def getPhoto():    
-#     """возвращает фото расписания занятий"""
-#     photo = open('data/novoe_raspisanie.jpg', 'rb')
-#     return photo
-
-
 def ExecuteSQL_getImage():
     """возвращает фото расписания занятий из базы данных."""
     SQL = "SELECT img FROM images WHERE name = 'timetable'"
@@ -36,6 +30,25 @@ def ExecuteSQL_getImage():
         SQL_result = cursor_db.fetchall()
     photo = SQL_result[0][0]
     return photo
+
+
+
+
+def ExecuteSQL_Image_update():
+    """ Загружает новую картинку расписания в БД.
+    Фотография img.jpg находится в корне, туда её временно записываем после отправки пользователем-адмиом
+    в другой функции. Здесь эту картинку считываем в объект image_data. Далее переводим данные картинки
+    в специальный байт-код для SQLite. Во втором диспетчере контекста готовим и отправляем SQL-запрос.
+    Компоненты BD: images - таблица, name - стоблик с названием картинок, img - столбик с картинками.
+    При формировании SQL-запроса, массив байт-кода картинки передаём отдельно через (?). """
+
+    with open('img.jpg', 'rb') as file:
+        image_data = file.read()
+    image_data = sql.Binary(image_data)
+
+    with sql.connect('DanceHouseBot.db') as connect_db:
+            cursor_db = connect_db.cursor()
+            cursor_db.execute("UPDATE images SET img = (?) WHERE name = 'timetable'", (image_data,) )
 
 
 

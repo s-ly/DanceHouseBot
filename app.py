@@ -50,6 +50,7 @@ class StateGroupFSM(StatesGroup):
     user_state_admin_edit_about = State()  # для админки, жду ввод текста 'О нас'
     user_state_admin_edit_price = State()  # для админки, жду ввод текста 'Прайс-лист'
     user_state_admin_edit_contact = State()  # для админки, жду ввод текста 'Контакты'
+    user_state_admin_edit_image = State()  # для админки, жду ввод картинки 'Расписание'
 
 # создаём коавиатуру и добавляем кнопки
 # resize_keyboard=True - уменьшает кнопки
@@ -69,13 +70,15 @@ button_exit_admin = KeyboardButton('Выход из админки')
 button_show_about = KeyboardButton('Показать: О нас')
 button_show_price = KeyboardButton('Показать: Прайс-лист')
 button_show_contact = KeyboardButton('Показать: Контакты')
+button_show_image = KeyboardButton('Показать: Расписание')
 button_edit_about = KeyboardButton('Редактировать: О нас')
 button_edit_price = KeyboardButton('Редактировать: Прайс-лист')
 button_edit_contact = KeyboardButton('Редактировать: Контакты')
+button_edit_image = KeyboardButton('Редактировать: Расписание')
 keyboard_admin.add(button_show_about, button_edit_about,
 button_show_price, button_edit_price,
 button_show_contact, button_edit_contact,
-button_exit_admin)
+button_exit_admin, button_show_image, button_edit_image)
 
 
 
@@ -117,10 +120,11 @@ async def buttonTimetableMess(message: types.Message, state: FSMContext):
 
 
 
+
+@dp.message_handler(Text(equals="Показать: Расписание"), state=StateGroupFSM.user_state_admin)
 @dp.message_handler(Text(equals="Расписание"), state=StateGroupFSM.user_state_default)
 async def buttonTimetableMess(message: types.Message):
-    """ Отвечает на кнопку: button_timetable"""
-    # photo = func.getPhoto()
+    """ Отвечает на кнопку 'Расписание' и 'Показать: Расписание' """
     photo = func.ExecuteSQL_getImage()
     await bot.send_photo(message.from_user.id, photo)
 
@@ -208,6 +212,16 @@ async def buttonContactMess(message: types.Message):
 
 
 
+@dp.message_handler(Text(equals="Редактировать: Расписание"), state=StateGroupFSM.user_state_admin)
+async def buttonContactMess(message: types.Message):
+    """ Отвечает на кнопку 'Редактировать: Расписание'. 
+    Переводит пользователя администратора в состояние: жду ввод картинки 'Расписание' """
+    await message.answer('Редактирование пункта: Расписание. Отправьте новую картинку расписания.')
+    await StateGroupFSM.user_state_admin_edit_image.set()
+
+
+
+
 @dp.message_handler(state=StateGroupFSM.user_state_admin_edit_contact)
 async def buttonContactMess(message: types.Message):
     """ Отвечает на любые сообщения в состоятии:  жду ввод текста 'Контакты'. 
@@ -216,6 +230,46 @@ async def buttonContactMess(message: types.Message):
     await message.answer('Пункт Отредактирован')
     await StateGroupFSM.user_state_admin.set()
 
+
+
+
+@dp.message_handler(state=StateGroupFSM.user_state_admin_edit_image)
+@dp.message_handler(content_types=['photo'], state=StateGroupFSM.user_state_admin_edit_image)
+@dp.message_handler(content_types=['document'], state=StateGroupFSM.user_state_admin_edit_image)
+async def buttonContactMess(message: types.Message):
+    """ Отвечает на любые сообщения в состоятии:  жду ввод картинки 'Расписание',
+    отвечает на любые документы в состоятии:  жду ввод картинки 'Расписание',
+    отвечает на любые картинки в состоятии:  жду ввод картинки 'Расписание'.
+    Осуществляет проверку, что отправил пользователь, какой тип сообщения.
+    Если отправленна картинка, запускаем остальной код:
+    Сохраняет отправленную пользователем-админум картинку в корне на диске
+    под именем img.jpg, потом вызывает удалённую функцию отправки картинки в BD.
+    Возвращает пользователя администратора в состояние: admin. """
+
+    # :key: TEXT 
+    # :key: AUDIO 
+    # :key: DOCUMENT 
+    # :key: GAME 
+    # :key: PHOTO 
+    # :key: STICKER 
+    # :key: VIDEO 
+    # :key: VOICE 
+    # :key: NEW_CHAT_MEMBERS 
+    # :key: LEFT_CHAT_MEMBER 
+    # :key: INVOICE 
+    # :key: SUCCESSFUL_PAYMENT 
+    # :key: UNKNOWN
+
+    cont_type = message.content_type
+    print(cont_type)
+
+    if cont_type == 'photo':
+        await message.photo[-1].download('img.jpg')
+        func.ExecuteSQL_Image_update()
+        await message.answer('Пункт отредактирован')
+        await StateGroupFSM.user_state_admin.set()
+    else:
+        await message.answer('Необходимо отправить картинку.')
 
 
 
