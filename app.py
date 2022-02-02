@@ -4,6 +4,9 @@
 from re import X
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters import state
+from aiogram.types import inline_keyboard
+from aiogram.types import reply_keyboard
+from aiogram.types.callback_query import CallbackQuery
 import MyToken  # содержит токен
 
 # Машина состояний
@@ -18,11 +21,14 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 # для кнопок
 from aiogram.types.reply_keyboard import KeyboardButton, ReplyKeyboardMarkup
 
+# для Инлайн-клавиатуры
+from aiogram.types.inline_keyboard import InlineKeyboardButton, InlineKeyboardMarkup
+
 # необходимо делать проверку на полное совпадение текста. через специальный фильтр Text 
 from aiogram.dispatcher.filters import Text
 
 # для форматирования
-from aiogram.utils.markdown import italic, code
+from aiogram.utils.markdown import italic, code, text
 
 # import Texts           # мой модуль, хранит текст
 import func            # мой модуль, функции
@@ -35,8 +41,8 @@ import func            # мой модуль, функции
 # testToken = 'тут токен'
 # При разработке использеум test, для работы my.
 # в git его игнорируем, а в место пушим зашифрованный архив.
-API_TOKEN = MyToken.myToken # рабочий бот
-# API_TOKEN = MyToken.testToken # тестовый бот
+# API_TOKEN = MyToken.myToken # рабочий бот
+API_TOKEN = MyToken.testToken # тестовый бот
 
 # Initialize bot and dispatcher
 storage = MemoryStorage() # место хранения контекста в ОЗУ
@@ -62,6 +68,7 @@ button_about = KeyboardButton('О нас')
 button_price = KeyboardButton('Прайс-лист')
 button_contact = KeyboardButton('Контакты')
 button_timetable = KeyboardButton('Расписание')
+# button_test = KeyboardButton('test')
 keyboard.add(button_about, button_price, button_contact, button_timetable)
 
 # Клавиатура для админки
@@ -79,6 +86,28 @@ keyboard_admin.add(button_show_about, button_edit_about,
 button_show_price, button_edit_price,
 button_show_contact, button_edit_contact,
 button_exit_admin, button_show_image, button_edit_image)
+
+# Инлайн-клавиатура
+inline_keyboard_test = InlineKeyboardMarkup()
+inline_button_test = InlineKeyboardButton(text='Тест кнопка!', callback_data='Тест кнопка!')
+inline_keyboard_test = InlineKeyboardMarkup().add(inline_button_test)
+
+
+
+
+
+
+
+# @dp.callback_query_handler()
+# func=lambda call: True
+@dp.callback_query_handler(text='Тест кнопка!')
+async def process_callback_button1(callback_query: types.CallbackQuery):
+# async def process_callback_button1():
+    print("1234")
+    # await callback_query.message.answer('123')
+    # print("123")
+    # await bot.answer_callback_query(callback_query.id)
+    # await bot.send_message(callback_query.from_user.id, 'Нажата первая кнопка!')
 
 
 
@@ -98,6 +127,20 @@ async def get_state(message: types.Message, state: FSMContext):
     """ Узнать текущий статус состояния"""
     cs = await state.get_state()
     print(cs)
+
+# @dp.callback_query_handler(func=lambda c: c.data == 'button1')
+# async def process_callback_button1(callback_query: types.CallbackQuery):
+#     await bot.answer_callback_query(callback_query.id)
+#     await bot.send_message(callback_query.from_user.id, 'Нажата первая кнопка!')
+
+
+# @dispatcher.callback_query_handler(lambda call: "<CALLBACK>" in call.data)
+# async def next_keyboard(call):
+
+#     await call.message.edit_reply_markup(<YOUR KEYBOARD>)
+
+
+
 
 
 
@@ -153,8 +196,12 @@ async def buttonPriceMess(message: types.Message):
 @dp.message_handler(Text(equals="Показать: Контакты"), state=StateGroupFSM.user_state_admin)
 @dp.message_handler(Text(equals="Контакты"), state=StateGroupFSM.user_state_default)
 async def buttonContactMess(message: types.Message):
-    """ Отвечает на кнопку 'Контакты' и 'Показать: Контакты' """
-    await message.answer(func.ExecuteSQL(3))
+    """ Отвечает на кнопку 'Контакты' и 'Показать: Контакты'.]
+    Дополнительно показывает инлайн-клавиатуру."""
+    await message.answer(func.ExecuteSQL(3), reply_markup=inline_keyboard_test)
+    # await message.answer("test", reply_markup=inline_keyboard_test)
+    # await message.answer(reply_markup=inline_keyboard_test)
+    # await message.reply("Первая инлайн кнопка", reply_markup=kb.inline_kb1)
 
 
 
