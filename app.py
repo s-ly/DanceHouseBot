@@ -4,9 +4,10 @@
 from re import X
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters import state
-from aiogram.types import inline_keyboard
-from aiogram.types import reply_keyboard
-from aiogram.types.callback_query import CallbackQuery
+# from aiogram.types import inline_keyboard
+# from aiogram.types import reply_keyboard
+# from aiogram.types.callback_query import CallbackQuery
+# from aiogram.types import CallbackQuery
 import MyToken  # содержит токен
 
 # Машина состояний
@@ -22,7 +23,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types.reply_keyboard import KeyboardButton, ReplyKeyboardMarkup
 
 # для Инлайн-клавиатуры
-from aiogram.types.inline_keyboard import InlineKeyboardButton, InlineKeyboardMarkup
+# from aiogram.types.inline_keyboard import InlineKeyboardButton, InlineKeyboardMarkup
 
 # необходимо делать проверку на полное совпадение текста. через специальный фильтр Text 
 from aiogram.dispatcher.filters import Text
@@ -32,8 +33,6 @@ from aiogram.utils.markdown import italic, code, text
 
 # import Texts           # мой модуль, хранит текст
 import func            # мой модуль, функции
-
-
 
 
 # Файл MyToken.py содержит две строки:
@@ -88,28 +87,16 @@ button_show_contact, button_edit_contact,
 button_exit_admin, button_show_image, button_edit_image)
 
 # Инлайн-клавиатура
-inline_keyboard_test = InlineKeyboardMarkup()
-inline_button_test = InlineKeyboardButton(text='Тест кнопка!', callback_data='Тест кнопка!')
-inline_keyboard_test = InlineKeyboardMarkup().add(inline_button_test)
+inline_keyboard_test = types.InlineKeyboardMarkup()
+inline_button_test = types.InlineKeyboardButton(text='1', callback_data='1')
+# inline_keyboard_test = InlineKeyboardMarkup().add(inline_button_test)
+inline_keyboard_test.add(inline_button_test)
 
 
-
-
-
-
-
-# @dp.callback_query_handler()
-# func=lambda call: True
-@dp.callback_query_handler(text='Тест кнопка!')
-async def process_callback_button1(callback_query: types.CallbackQuery):
+@dp.callback_query_handler(text='1', state='*')
+async def process_callback_button1(query: types.CallbackQuery):
 # async def process_callback_button1():
     print("1234")
-    # await callback_query.message.answer('123')
-    # print("123")
-    # await bot.answer_callback_query(callback_query.id)
-    # await bot.send_message(callback_query.from_user.id, 'Нажата первая кнопка!')
-
-
 
 
 @dp.message_handler(commands=['start'])
@@ -118,7 +105,10 @@ async def start(message: types.Message):
     Устанавливает состояние пользователя на user_state_default."""
     await StateGroupFSM.user_state_default.set()
     await message.answer(func.ExecuteSQL(4), reply_markup=keyboard)  
-
+    ###############
+    # await message.answer("111", reply_markup=inline_keyboard_test)
+    # print('кнопка отправленна')
+    ###############
 
 
 
@@ -127,22 +117,6 @@ async def get_state(message: types.Message, state: FSMContext):
     """ Узнать текущий статус состояния"""
     cs = await state.get_state()
     print(cs)
-
-# @dp.callback_query_handler(func=lambda c: c.data == 'button1')
-# async def process_callback_button1(callback_query: types.CallbackQuery):
-#     await bot.answer_callback_query(callback_query.id)
-#     await bot.send_message(callback_query.from_user.id, 'Нажата первая кнопка!')
-
-
-# @dispatcher.callback_query_handler(lambda call: "<CALLBACK>" in call.data)
-# async def next_keyboard(call):
-
-#     await call.message.edit_reply_markup(<YOUR KEYBOARD>)
-
-
-
-
-
 
 
 @dp.message_handler(Text(equals="Выход из админки"), state=StateGroupFSM.user_state_admin)
@@ -153,15 +127,11 @@ async def buttonTimetableMess(message: types.Message):
     await message.answer('Выход из админки', reply_markup=keyboard)
 
 
-
-
 @dp.message_handler(commands=['admin'], state=StateGroupFSM.user_state_default)
 async def buttonTimetableMess(message: types.Message, state: FSMContext):
     """ Отвечает на команду: /admin"""
     # await StateGroupFSM.user_state_admin.set()
     await func.runAdmin(message, keyboard_admin)
-
-
 
 
 @dp.message_handler(Text(equals="Показать: Расписание"), state=StateGroupFSM.user_state_admin)
@@ -172,15 +142,11 @@ async def buttonTimetableMess(message: types.Message):
     await bot.send_photo(message.from_user.id, photo)
 
 
-
-
 @dp.message_handler(Text(equals="Показать: О нас"), state=StateGroupFSM.user_state_admin)
 @dp.message_handler(Text(equals="О нас"), state=StateGroupFSM.user_state_default)
 async def buttonAboutMess(message: types.Message):
     """ Отвечает на кнопку 'О нас' и 'Показать: О нас' """
     await message.answer(func.ExecuteSQL(1))
-
-
 
 
 @dp.message_handler(Text(equals="Показать: Прайс-лист"), state=StateGroupFSM.user_state_admin)
@@ -191,19 +157,19 @@ async def buttonPriceMess(message: types.Message):
     await message.answer(code(func.ExecuteSQL(2)), parse_mode=types.ParseMode.MARKDOWN_V2)
 
 
-
-
 @dp.message_handler(Text(equals="Показать: Контакты"), state=StateGroupFSM.user_state_admin)
 @dp.message_handler(Text(equals="Контакты"), state=StateGroupFSM.user_state_default)
 async def buttonContactMess(message: types.Message):
     """ Отвечает на кнопку 'Контакты' и 'Показать: Контакты'.]
     Дополнительно показывает инлайн-клавиатуру."""
-    await message.answer(func.ExecuteSQL(3), reply_markup=inline_keyboard_test)
+    # await message.answer(func.ExecuteSQL(3), reply_markup=inline_keyboard_test)
+    await message.answer(func.ExecuteSQL(3))
+    await message.answer("111", reply_markup=inline_keyboard_test)
+    print('кнопка отправленна')
+
     # await message.answer("test", reply_markup=inline_keyboard_test)
     # await message.answer(reply_markup=inline_keyboard_test)
     # await message.reply("Первая инлайн кнопка", reply_markup=kb.inline_kb1)
-
-
 
 
 @dp.message_handler(Text(equals="Редактировать: О нас"), state=StateGroupFSM.user_state_admin)
@@ -212,8 +178,6 @@ async def buttonContactMess(message: types.Message):
     Переводит пользователя администратора в состояние: жду ввод текста 'О нас'. """
     await message.answer('Редактирование пункта: О нас. Введите новый текст.')
     await StateGroupFSM.user_state_admin_edit_about.set()
-
-
 
 
 @dp.message_handler(state=StateGroupFSM.user_state_admin_edit_about)
@@ -225,16 +189,12 @@ async def buttonContactMess(message: types.Message):
     await StateGroupFSM.user_state_admin.set()
 
 
-
-
 @dp.message_handler(Text(equals="Редактировать: Прайс-лист"), state=StateGroupFSM.user_state_admin)
 async def buttonContactMess(message: types.Message):
     """ Отвечает на кнопку 'Редактировать: Прайс-лист'. 
     Переводит пользователя администратора в состояние: жду ввод текста 'Редактировать: Прайс-лист'. """
     await message.answer('Редактирование пункта: Прайс-лист. Введите новый текст.')
     await StateGroupFSM.user_state_admin_edit_price.set()
-
-
 
 
 @dp.message_handler(state=StateGroupFSM.user_state_admin_edit_price)
@@ -246,17 +206,12 @@ async def buttonContactMess(message: types.Message):
     await StateGroupFSM.user_state_admin.set()
 
 
-
-
-
 @dp.message_handler(Text(equals="Редактировать: Контакты"), state=StateGroupFSM.user_state_admin)
 async def buttonContactMess(message: types.Message):
     """ Отвечает на кнопку 'Редактировать: Контакты'. 
     Переводит пользователя администратора в состояние: жду ввод текста 'Редактировать: Контакты'. """
     await message.answer('Редактирование пункта: Контакты. Введите новый текст.')
     await StateGroupFSM.user_state_admin_edit_contact.set()
-
-
 
 
 @dp.message_handler(Text(equals="Редактировать: Расписание"), state=StateGroupFSM.user_state_admin)
@@ -267,8 +222,6 @@ async def buttonContactMess(message: types.Message):
     await StateGroupFSM.user_state_admin_edit_image.set()
 
 
-
-
 @dp.message_handler(state=StateGroupFSM.user_state_admin_edit_contact)
 async def buttonContactMess(message: types.Message):
     """ Отвечает на любые сообщения в состоятии:  жду ввод текста 'Контакты'. 
@@ -276,8 +229,6 @@ async def buttonContactMess(message: types.Message):
     await message.answer(func.ExecuteSQL_update(3, message.text))
     await message.answer('Пункт Отредактирован')
     await StateGroupFSM.user_state_admin.set()
-
-
 
 
 @dp.message_handler(state=StateGroupFSM.user_state_admin_edit_image)
@@ -319,8 +270,6 @@ async def buttonContactMess(message: types.Message):
         await message.answer('Необходимо отправить картинку.')
 
 
-
-
 @dp.message_handler(state=StateGroupFSM.user_state_default)
 async def all_mess_state_default(message: types.Message):
     """ Отвечает на любые сообщения, если состояние не default.
@@ -328,15 +277,11 @@ async def all_mess_state_default(message: types.Message):
     await message.answer('Используйте кнопки.', reply_markup=keyboard)
 
 
-
-
 @dp.message_handler()
 async def all_mess_state_default(message: types.Message):
     """ Отвечает на любые сообщения, если состояние не default"""
     await message.answer('Переброска на Start')
     await start(message)
-
-
 
 
 @dp.message_handler(state=StateGroupFSM.user_state_admin)

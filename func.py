@@ -18,8 +18,6 @@ from app import StateGroupFSM
 import sqlite3 as sql
 
 
-
-
 def ExecuteSQL_getImage():
     """возвращает фото расписания занятий из базы данных."""
     SQL = "SELECT img FROM images WHERE name = 'timetable'"
@@ -30,8 +28,6 @@ def ExecuteSQL_getImage():
         SQL_result = cursor_db.fetchall()
     photo = SQL_result[0][0]
     return photo
-
-
 
 
 def ExecuteSQL_Image_update():
@@ -49,8 +45,6 @@ def ExecuteSQL_Image_update():
     with sql.connect('DanceHouseBot.db') as connect_db:
             cursor_db = connect_db.cursor()
             cursor_db.execute("UPDATE images SET img = (?) WHERE name = 'timetable'", (image_data,) )
-
-
 
 
 # Осуществляет проверку id пользователя.
@@ -71,8 +65,6 @@ async def runAdmin(message: types.Message, keyboard_admin):
         await message.answer('Только для админов')
 
 
-
-
 def ExecuteSQL(key_id: int) -> str:
     """Выполняет SQL запрос на чтение из столбца message, возвращает текст из таблицы."""
     SQL = f"SELECT message FROM texts WHERE id = {key_id}"
@@ -82,8 +74,6 @@ def ExecuteSQL(key_id: int) -> str:
         SQL_result = cursor_db.fetchall()
     text_SQL_result = SQL_result[0][0]
     return text_SQL_result
-
-
 
 
 def ExecuteSQL_update(key_id: int, message_text: str) -> str: 
@@ -103,5 +93,3 @@ def ExecuteSQL_update(key_id: int, message_text: str) -> str:
         SQL_result = cursor_db.fetchall()
     text_SQL_result = SQL_result[0][0]
     return text_SQL_result
-
-
