@@ -18,9 +18,10 @@ from app import StateGroupFSM
 import sqlite3 as sql
 
 
-def ExecuteSQL_getImage():
-    """возвращает фото расписания занятий из базы данных."""
-    SQL = "SELECT img FROM images WHERE name = 'timetable'"
+def ExecuteSQL_getImage(img_name: str):
+    """ Возвращает фото из БД.
+    Принимает строку - имя картинки в БД."""
+    SQL = f"SELECT img FROM images WHERE name = '{img_name}'"
     with sql.connect('DanceHouseBot.db') as connect_db:
         connect_db.text_factory = bytes # так-как работаем с битами
         cursor_db = connect_db.cursor()
@@ -30,8 +31,10 @@ def ExecuteSQL_getImage():
     return photo
 
 
-def ExecuteSQL_Image_update():
-    """ Загружает новую картинку расписания в БД.
+def ExecuteSQL_Image_update(img_name: str):
+    """ Загружает новую картинку в БД.
+
+    Принимает строку - имя картинки в БД.
     Фотография img.jpg находится в корне, туда её временно записываем после отправки пользователем-адмиом
     в другой функции. Здесь эту картинку считываем в объект image_data. Далее переводим данные картинки
     в специальный байт-код для SQLite. Во втором диспетчере контекста готовим и отправляем SQL-запрос.
@@ -44,7 +47,7 @@ def ExecuteSQL_Image_update():
 
     with sql.connect('DanceHouseBot.db') as connect_db:
             cursor_db = connect_db.cursor()
-            cursor_db.execute("UPDATE images SET img = (?) WHERE name = 'timetable'", (image_data,) )
+            cursor_db.execute(f"UPDATE images SET img = (?) WHERE name = '{img_name}'", (image_data,) )
 
 
 # Осуществляет проверку id пользователя.
