@@ -15,6 +15,9 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 # Мой класс для работы с состояниями пользователя
 from app import StateGroupFSM 
 
+# хранение контекста
+from aiogram.dispatcher import FSMContext
+
 import sqlite3 as sql
 
 
@@ -96,3 +99,43 @@ def ExecuteSQL_update(key_id: int, message_text: str) -> str:
         SQL_result = cursor_db.fetchall()
     text_SQL_result = SQL_result[0][0]
     return text_SQL_result
+
+
+def Print_LOG(log_text: str):
+    """ Выводит лог в консоль."""
+    print('LOG: ' + log_text)
+
+
+async def createFormAdmin (message: types.Message, state: FSMContext) -> str:
+    """Создаёт анкету админу"""
+    Print_LOG("Создать анкету админу")
+    allUserData = await state.get_data() # загружаем статусы пользователя
+    userID = str(allUserData['userID'])
+    userName = str(allUserData['userName'])
+    userDanceSelect = str(allUserData['userDanceSelect'])
+    userDaySelect = str(allUserData['userDaySelect'])
+    userContac = str(allUserData['userContac'])
+    form = ('Анкета:\n' + 
+    'userID: ' + userID + '\n' + 
+    'userName: ' + userName + '\n' +
+    'userDanceSelect: ' + userDanceSelect + '\n' +
+    'userDaySelect: ' + userDaySelect + '\n' +
+    'userContac: ' + userContac)
+    return form
+
+
+async def confirmationForm (message: types.Message, state: FSMContext) -> str:
+    """Подтверждение выбора пользователя и запрос контактов перед записью."""
+    Print_LOG("Подтверждение выбора пользователя и запрос контактов перед записью.")
+    allUserData = await state.get_data() # загружаем статусы пользователя
+    # userID = str(allUserData['userID'])
+    # userName = str(allUserData['userName'])
+    # text = 'Оставьте Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    userDanceSelect = str(allUserData['userDanceSelect'])
+    userDaySelect = str(allUserData['userDaySelect'])
+    userContac = str(allUserData['userContac'])
+    form = ('Вы выбрали:\n' + 
+    'Танец: ' + userDanceSelect + '\n' +
+    'День: ' + userDaySelect + '\n' + 
+    'Контакты: ' + userContac)
+    return form

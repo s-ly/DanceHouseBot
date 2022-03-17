@@ -1,7 +1,9 @@
 # Телеграм бот t.me/DanceHouseBot
 # Школа танцев.
 
+from email import message
 from re import X
+from unittest.mock import call
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters import state
 # from aiogram.types import inline_keyboard
@@ -52,12 +54,33 @@ dp = Dispatcher(bot, storage=storage)
 class StateGroupFSM(StatesGroup):
     user_state_admin = State()  # для админки
     user_state_default = State()  # все остальные
+    user_state_waiting_contacts = State()  # жду контакты
     user_state_admin_edit_about = State()  # для админки, жду ввод текста 'О нас'
     user_state_admin_edit_price = State()  # для админки, жду ввод текста 'Прайс-лист'
     user_state_admin_edit_contact = State()  # для админки, жду ввод текста 'Контакты'
     user_state_admin_edit_image = State()  # админка, жду картинку 'Расписание'
     user_state_admin_edit_poster = State()  # админка, жду картинку 'Афиша'
 
+
+async def InItStateUser(message: types.Message, state: FSMContext):
+    """ Инициирует данные пользователя """    
+    await state.update_data(userID=message.from_user.id)
+    await state.update_data(userName=message.chat.username)
+    await state.update_data(userDanceSelect='not selected')
+    await state.update_data(userDaySelect='not selected')
+    await state.update_data(userContac='no')
+    func.Print_LOG("Инициирует данные пользователя")
+
+    # await state.update_data(userStatus='registr')
+    # await state.update_data(idWord='no')
+    # await state.update_data(translatDir='no')
+    # await state.update_data(questionWord='no')
+    # await state.update_data(showkeyboard='true')
+
+
+###################################################################################################
+# Клавиатуры
+###################################################################################################
 # создаём коавиатуру и добавляем кнопки
 # resize_keyboard=True - уменьшает кнопки
 # one_time_keyboard=True - скрыть кнопку после нажатия
@@ -70,6 +93,7 @@ button_contact = KeyboardButton('Контакты')
 button_timetable = KeyboardButton('Расписание')
 button_poster = KeyboardButton('Афиша')
 keyboard.add(button_about, button_price, button_contact, button_timetable, button_poster)
+
 
 # Клавиатура для админки
 keyboard_admin = ReplyKeyboardMarkup(resize_keyboard=True)
@@ -90,12 +114,15 @@ button_show_contact, button_edit_contact,
 button_exit_admin, button_show_image, button_edit_image,
 button_show_poster, button_edit_poster)
 
+
 # Инлайн-клавиатура
 inline_key_contacts = types.InlineKeyboardMarkup() 
 inline_but_web = types.InlineKeyboardButton(
     text='Записаться на пробное занятие',
     url='https://kazandanceschool.ru/')
 inline_key_contacts.add(inline_but_web)
+
+
 # inline_keyboard_test = types.InlineKeyboardMarkup()
 # inline_button_test = types.InlineKeyboardButton(text='1', callback_data='1')
 # inline_button_test2 = types.InlineKeyboardButton(text='2', url='https://vk.com/s.lysov')
@@ -111,18 +138,176 @@ inline_key_contacts.add(inline_but_web)
 #     await call_inline.answer()
 
 
-@dp.message_handler(commands=['start'])
-async def start(message: types.Message):
+# Инлайн-клавиатура для квиза, шаг-1 (Здравствуйте)
+inline_key_kviz_step1 = types.InlineKeyboardMarkup()
+
+inline_but_kviz_step1_b1 = types.InlineKeyboardButton(
+    text='Как записаться на пробное занятие?',
+    callback_data='s1b1')
+inline_but_kviz_step1_b2 = types.InlineKeyboardButton(
+    text='Расписание',
+    callback_data='s1b2')
+inline_but_kviz_step1_b3 = types.InlineKeyboardButton(
+    text='Я без пары и танцевального опыта, как быть?',
+    callback_data='s1b3')
+inline_but_kviz_step1_b4 = types.InlineKeyboardButton(
+    text='Где Вы находитесь?',
+    callback_data='s1b4')
+inline_but_kviz_step1_b5 = types.InlineKeyboardButton(
+    text='Сколько это стоит?',
+    callback_data='s1b5')
+
+inline_key_kviz_step1.add(inline_but_kviz_step1_b1)
+inline_key_kviz_step1.add(inline_but_kviz_step1_b2)
+inline_key_kviz_step1.add(inline_but_kviz_step1_b3)
+inline_key_kviz_step1.add(inline_but_kviz_step1_b4)
+inline_key_kviz_step1.add(inline_but_kviz_step1_b5)
+
+
+# Инлайн-клавиатура для квиза, шаг-2 (Как записаться)
+inline_key_kviz_step2 = types.InlineKeyboardMarkup()
+
+inline_but_kviz_step2_b1 = types.InlineKeyboardButton(
+    text='В паре',
+    callback_data='s2b1')
+inline_but_kviz_step2_b2 = types.InlineKeyboardButton(
+    text='Начну сольно (только для девушек)',
+    callback_data='s2b2')
+inline_but_kviz_step2_b3 = types.InlineKeyboardButton(
+    text='Хочу в паре, но пару нет',
+    callback_data='s2b3')
+
+inline_key_kviz_step2.add(inline_but_kviz_step2_b1)
+inline_key_kviz_step2.add(inline_but_kviz_step2_b2)
+inline_key_kviz_step2.add(inline_but_kviz_step2_b3)
+
+
+# Инлайн-клавиатура для квиза, шаг-3 (Выбор танца)
+inline_key_kviz_step3 = types.InlineKeyboardMarkup()
+
+inline_but_kviz_step3_b1 = types.InlineKeyboardButton(
+    text='Бачата',
+    callback_data='s3b1')
+inline_but_kviz_step3_b2 = types.InlineKeyboardButton(
+    text='Сальса',
+    callback_data='s3b2')
+inline_but_kviz_step3_b3 = types.InlineKeyboardButton(
+    text='Кизомба',
+    callback_data='s3b3')
+inline_but_kviz_step3_b4 = types.InlineKeyboardButton(
+    text='Пока не разбираюсь',
+    callback_data='s3b4')
+
+inline_key_kviz_step3.add(inline_but_kviz_step3_b1)
+inline_key_kviz_step3.add(inline_but_kviz_step3_b2)
+inline_key_kviz_step3.add(inline_but_kviz_step3_b3)
+inline_key_kviz_step3.add(inline_but_kviz_step3_b4)
+
+
+# Инлайн-клавиатура для квиза, шаг-4 (Выбор дня и времени)
+inline_key_kviz_step4_dance1 = types.InlineKeyboardMarkup()
+inline_key_kviz_step4_dance2 = types.InlineKeyboardMarkup()
+inline_key_kviz_step4_dance3 = types.InlineKeyboardMarkup()
+inline_key_kviz_step4_dance4 = types.InlineKeyboardMarkup()
+
+inline_but_kviz_step4_b1 = types.InlineKeyboardButton(
+    text='Вторник 19:00',
+    callback_data='s4b1')
+inline_but_kviz_step4_b2 = types.InlineKeyboardButton(
+    text='Суббота 19:00',
+    callback_data='s4b2')
+inline_but_kviz_step4_b3 = types.InlineKeyboardButton(
+    text='Среда 19:30',
+    callback_data='s4b3')
+inline_but_kviz_step4_b4 = types.InlineKeyboardButton(
+    text='Пятница 19:30',
+    callback_data='s4b4')
+inline_but_kviz_step4_b5 = types.InlineKeyboardButton(
+    text='Понедельник 20:30',
+    callback_data='s4b5')
+inline_but_kviz_step4_b6 = types.InlineKeyboardButton(
+    text='Четверг 20:30',
+    callback_data='s4b6')
+inline_but_kviz_step4_b7 = types.InlineKeyboardButton(
+    text='Вторник 18:00',
+    callback_data='s4b7')
+inline_but_kviz_step4_b8 = types.InlineKeyboardButton(
+    text='Суббота 18:00',
+    callback_data='s4b8')
+
+# Бачата
+inline_key_kviz_step4_dance1.add(inline_but_kviz_step4_b1)
+inline_key_kviz_step4_dance1.add(inline_but_kviz_step4_b2)
+
+# Сальса
+inline_key_kviz_step4_dance2.add(inline_but_kviz_step4_b3)
+inline_key_kviz_step4_dance2.add(inline_but_kviz_step4_b4)
+
+# Кизомба
+inline_key_kviz_step4_dance3.add(inline_but_kviz_step4_b5)
+inline_key_kviz_step4_dance3.add(inline_but_kviz_step4_b6)
+
+# Lady Style
+inline_key_kviz_step4_dance4.add(inline_but_kviz_step4_b7)
+inline_key_kviz_step4_dance4.add(inline_but_kviz_step4_b8)
+
+
+# Инлайн-клавиатура для квиза, шаг-5 (заполнение формы)
+inline_key_kviz_step5 = types.InlineKeyboardMarkup()
+
+inline_but_kviz_step5_b1 = types.InlineKeyboardButton(
+    text='Записаться',
+    callback_data='s5b1')
+
+inline_but_kviz_step5_b2 = types.InlineKeyboardButton(
+    text='Выбрать другое',
+    callback_data='s5b2')
+
+inline_key_kviz_step5.add(inline_but_kviz_step5_b1)
+inline_key_kviz_step5.add(inline_but_kviz_step5_b2)
+
+# Инлайн-клавиатура для квиза, шаг-6 (вернуться в начало)
+inline_key_kviz_step6 = types.InlineKeyboardMarkup()
+
+inline_but_kviz_step6_b1 = types.InlineKeyboardButton(
+    text='Вернуться в начало',
+    callback_data='s6b1')
+
+inline_key_kviz_step6.add(inline_but_kviz_step6_b1)
+###################################################################################################
+
+
+@dp.message_handler(commands=['test'], state=StateGroupFSM.user_state_default)
+async def sendFormAdmin(message: types.Message, state: FSMContext):
+    """ отправить анкету админу """
+    func.Print_LOG("отправить анкету админу")
+    form = await func.createFormAdmin(message, state)
+    admin_id = 80315171 # я, Вероника 1837933533
+    admin_id_vladimir = 434967278 # id Владимира
+    await bot.send_message(admin_id, form)
+    await bot.send_message(admin_id_vladimir, form)
+
+
+@dp.message_handler(commands=['start'], state='*')
+async def start(message: types.Message, state: FSMContext):
     """ Отвечает на команду: /start когда состояние пользователя не установлено.
     Устанавливает состояние пользователя на user_state_default."""
-    await StateGroupFSM.user_state_default.set()
-    await message.answer(func.ExecuteSQL(4), reply_markup=keyboard) 
+    text1 = 'Здравствуйте!'
+    text2 = ('Вас приветствует студия танцев «Dance House». ' + 
+    'У нас идет набор в начинающие группы по Бачате, Сальсе, Кизомбе и Леди стайл. ' +
+    'Чем мы можем Вам помочь?')
+    await InItStateUser(message, state) # Инициирует данные пользователя
+    await StateGroupFSM.user_state_default.set() # Инициирует состояние пользователя
+    # await message.answer(func.ExecuteSQL(4), reply_markup=keyboard) 
+    await message.answer(text1, reply_markup=keyboard) 
+    await message.answer(text2, reply_markup=inline_key_kviz_step1)
 
 
 @dp.message_handler(commands=['gs'], state='*')
 async def get_state(message: types.Message, state: FSMContext):
     """ Узнать текущий статус состояния"""
     cs = await state.get_state()
+    await message.answer(str(cs))
     print(cs)
 
 
@@ -141,6 +326,326 @@ async def buttonTimetableMess(message: types.Message, state: FSMContext):
     await func.runAdmin(message, keyboard_admin)
 
 
+@dp.message_handler(state=StateGroupFSM.user_state_waiting_contacts)
+async def waitingContacts(message: types.Message, state: FSMContext):
+    """ Перехватывает всё в состояниии 'Жду контактов' """
+    await state.update_data(userContac=message.text)
+    textForm = await func.confirmationForm(message, state)
+    # await message.answer(textForm)
+    await message.answer(textForm, reply_markup=inline_key_kviz_step5)
+    await StateGroupFSM.user_state_default.set() # Инициирует состояние пользователя default
+    
+
+
+###################################################################################################
+# Обработка инлайн кнопок квиза
+#
+# Передаём message в await start(call_inline.message) так-как он нужен методу start()
+###################################################################################################
+# Шаг 1
+@dp.callback_query_handler(text='s1b1', state=StateGroupFSM.user_state_default)
+async def callback_inline_but_s1b1(call_inline: types.CallbackQuery):
+    """ Обработка inline-кнопки s1b1 (Как записаться). Переходит к шаг-2."""
+    func.Print_LOG("Обработка inline-кнопки s1b1 (Как записаться)")
+    await call_inline.answer('Хорошо')
+    text = "Вы хотели бы танцевать в паре или сольно?"
+    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step2)
+
+
+@dp.callback_query_handler(text='s1b2', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery):
+    """ Обработка inline-кнопки s1b2 (Расписание).
+
+    Показывает расписание а потом переходит к шаг-2.
+    Сам показ работает так, словно нажата обычная кнопка 'Расписание'.
+    В конце вызывается метод, как если бы нажали инлайн-кнопку 's1b1 (Как записаться)'."""
+    func.Print_LOG("Обработка inline-кнопки s1b2 (Расписание)")
+    await call_inline.answer('Хорошо')    
+    text = "Стоимость пробного урока 350 руб"
+    await call_inline.message.answer(text)
+    await buttonTimetable(call_inline.message)  # показ расписания
+    await callback_inline_but_s1b1(call_inline) # прыжек на Шаг 1
+
+
+@dp.callback_query_handler(text='s1b3', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery):
+    """ Обработка inline-кнопки s1b3 (Я без пары и).
+
+    В конце вызывается метод, как если бы нажали инлайн-кнопку 's1b1 (Как записаться)'."""
+    func.Print_LOG("Обработка inline-кнопки s1b3 (Я без пары и)")
+    await call_inline.answer('Хорошо')    
+    text = ("Наличие пары не обязательно. Подберем на занятии. " +
+    "Есть группа сольного направления Леди Стайл. (только для девушек). " +
+    "Танцевальный опыт не нужен. Обучаем с Нуля.")
+    await call_inline.message.answer(text)
+    await callback_inline_but_s1b1(call_inline) # прыжек на Шаг 1
+
+
+@dp.callback_query_handler(text='s1b4', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery):
+    """ Обработка inline-кнопки s1b4 (Где Вы).
+
+    В конце вызывается метод, как если бы нажали инлайн-кнопку 's1b1 (Как записаться)'."""
+    func.Print_LOG("Обработка inline-кнопки s1b4 (Где Вы)")
+    await call_inline.answer('Хорошо')   
+    text = "Наш адрес Щапова 47, 1 этаж, 102 офис."
+    await call_inline.message.answer(text) 
+    await callback_inline_but_s1b1(call_inline) # прыжек на Шаг 1
+
+
+@dp.callback_query_handler(text='s1b5', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery):
+    """ Обработка inline-кнопки s1b5 (Сколько это стоит).
+
+    В конце вызывается метод, как если бы нажали инлайн-кнопку 's1b1 (Как записаться)'."""
+    func.Print_LOG("Обработка inline-кнопки s1b5 (Сколько это стоит)")
+    await call_inline.answer('Хорошо')    
+    text = ("Пробный урок 350 руб. " +
+    "По итогам пробного урока вам будут предложены различные виды абонементы")
+    await call_inline.message.answer(text) 
+    await callback_inline_but_s1b1(call_inline) # прыжек на Шаг 1
+
+
+# Шаг 2
+@dp.callback_query_handler(text='s2b1', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки s2b1 (В паре)"""
+    func.Print_LOG("Обработка inline-кнопки s2b1 (В паре)")
+    await call_inline.answer('Хорошо')  
+    text = ("Выберите направление танца")  
+    # await call_inline.message.answer(text)
+    # await start(call_inline.message, state)
+    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step3)
+
+
+@dp.callback_query_handler(text='s2b2', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки s2b2 (Начну сольно (только для девушек))"""
+    func.Print_LOG("Обработка inline-кнопки s2b2 (Начну сольно (только для девушек)")
+    text = """Бачата Lady Style - танцевальное направление для всех девушек,
+    которые хотят научиться красиво двигаться под любую музыку, быть пластичными,
+    гибкими и артистичными. Танцы, как ничто иное, помогают избавиться от комплексов
+    и полюбить свое тело.
+    Расписание занятий начинающей группы по Lady Style:
+    Вторник 18:00
+    Суббота 18:00
+    Стоимость пробного урока 350р
+    На какой день вас записать?"""
+    await call_inline.answer('Хорошо')    
+    await state.update_data(userDanceSelect='Lady Style')
+    # await sendFormAdmin(call_inline.message, state)
+    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance4)
+    # await start(call_inline.message, state)
+
+
+@dp.callback_query_handler(text='s2b3', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки s2b3 (Хочу в паре, но пару нет)"""
+    func.Print_LOG("Обработка inline-кнопки s2b3 (Хочу в паре, но пару нет)")
+    await call_inline.answer('Хорошо')    
+    text = ("Наличие пары не обязательно. " +
+    "Подберем на занятии. Выберите направление танца")  
+    # await call_inline.message.answer(text)
+    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step3)
+    # await start(call_inline.message, state)
+
+
+# Шаг 3
+@dp.callback_query_handler(text='s3b1', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки s3b1 (Бачата)"""
+    func.Print_LOG("Обработка inline-кнопки s3b1 (Бачата)")
+    text = """Расписание занятий начинающей группы по Бачате:
+    Вторник 19:00
+    Суббота 19:00
+    Стоимость пробного урока 350р
+    На какой день вас записать?"""
+    await call_inline.answer('Хорошо')
+    await state.update_data(userDanceSelect='Бачата')
+    # await sendFormAdmin(call_inline.message, state)
+    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance1)
+    # await call_inline.message.answer(text)
+    # await start(call_inline.message, state) # на старт временно
+
+
+@dp.callback_query_handler(text='s3b2', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки s3b2 (Сальса)"""
+    func.Print_LOG("Обработка inline-кнопки s3b2 (Сальса)")
+    text = """Расписание занятий начинающей группы по Сальсе:
+    Среда 19:30
+    Пятница 19:30
+    Стоимость пробного урока 350р
+    На какой день вас записать?"""
+    await call_inline.answer('Хорошо')
+    await state.update_data(userDanceSelect='Сальса')
+    # await sendFormAdmin(call_inline.message, state)
+    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance2)
+    # await start(call_inline.message, state) # на старт временно
+
+
+@dp.callback_query_handler(text='s3b3', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки s3b3 (Кизомба)"""
+    func.Print_LOG("Обработка inline-кнопки s3b3 (Кизомба)")
+    text = """Расписание занятий начинающей группы по Кизомбе:
+    Понедельник 20:30
+    Четверг 20:30
+    Стоимость пробного урока 350р
+    На какой день вас записать?"""
+    await call_inline.answer('Хорошо')
+    await state.update_data(userDanceSelect='Кизомба')
+    # await sendFormAdmin(call_inline.message, state)
+    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance3)
+    # await start(call_inline.message, state) # на старт временно
+
+
+@dp.callback_query_handler(text='s3b4', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки s3b4 (Пока не разбираюсь)"""
+    func.Print_LOG("Обработка inline-кнопки s3b4 (Пока не разбираюсь)")    
+    await call_inline.answer('Хорошо')
+    text = """
+    Бачата — это демонстрация мужественности и силы партнёра по отношению
+    к женственности и соблазнительности партнёрши.
+    Бачата имеет упрощенную хореографию, поэтому этот танец отлично подходит
+    в качестве танца для начинающих. Но, несмотря на всю свою простоту и легкость,
+    бачата является довольно разнообразным и богатым техникой танцем.
+    
+    Современная кизомба – это сексуальный непринужденный танец,
+    который позволяет чувствовать своего партнера, малейшие его движения и желания.
+    Кизомба не без причины назван самым сексуальным танцем 21 века и находится на пике
+    популярности, ее танцуют в ночных клубах, на дискотеках, на вечеринках!
+
+    Сальса помогает проще относиться к жизни! Кубинцы говорят, что европейцы танцуют
+    сальсу потому, что хотят научиться у кубинцев веселиться. И это абсолютная правдаМы,
+    жители холодного и неприветливого климата совершенно забыли, что для развлечения и
+    веселья нужно всего-то: музыка, азарт и улыбка.
+    
+    Выберите направление танца
+    """
+    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step3)
+
+
+# Шаг 4 (выбор дня и времени)
+@dp.callback_query_handler(text='s4b1', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки выбора дня недели и времени s4b1 """
+    func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b1")
+    await call_inline.answer('Хорошо')
+    await state.update_data(userDaySelect=inline_but_kviz_step4_b1.text) # берём из кнопки
+    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    await call_inline.message.answer(text)
+    await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
+
+
+@dp.callback_query_handler(text='s4b2', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки выбора дня недели и времени s4b2 """
+    func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b2")
+    await call_inline.answer('Хорошо')
+    await state.update_data(userDaySelect=inline_but_kviz_step4_b2.text) # берём из кнопки
+    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    await call_inline.message.answer(text)
+    await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
+
+
+@dp.callback_query_handler(text='s4b3', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки выбора дня недели и времени s4b3 """
+    func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b3")
+    await call_inline.answer('Хорошо')
+    await state.update_data(userDaySelect=inline_but_kviz_step4_b3.text) # берём из кнопки
+    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    await call_inline.message.answer(text)
+    await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
+
+@dp.callback_query_handler(text='s4b4', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки выбора дня недели и времени s4b4 """
+    func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b4")
+    await call_inline.answer('Хорошо')
+    await state.update_data(userDaySelect=inline_but_kviz_step4_b4.text) # берём из кнопки
+    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    await call_inline.message.answer(text)
+    await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
+
+@dp.callback_query_handler(text='s4b5', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки выбора дня недели и времени s4b5 """
+    func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b5")
+    await call_inline.answer('Хорошо')
+    await state.update_data(userDaySelect=inline_but_kviz_step4_b5.text) # берём из кнопки
+    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    await call_inline.message.answer(text)
+    await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
+
+
+@dp.callback_query_handler(text='s4b6', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки выбора дня недели и времени s4b6 """
+    func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b6")
+    await call_inline.answer('Хорошо')
+    await state.update_data(userDaySelect=inline_but_kviz_step4_b6.text) # берём из кнопки
+    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    await call_inline.message.answer(text)
+    await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
+
+
+@dp.callback_query_handler(text='s4b7', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки выбора дня недели и времени s4b7 """
+    func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b7")
+    await call_inline.answer('Хорошо')
+    await state.update_data(userDaySelect=inline_but_kviz_step4_b7.text) # берём из кнопки
+    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    await call_inline.message.answer(text)
+    await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
+
+
+@dp.callback_query_handler(text='s4b8', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки выбора дня недели и времени s4b8 """
+    func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b8")
+    await call_inline.answer('Хорошо')
+    await state.update_data(userDaySelect=inline_but_kviz_step4_b8.text) # берём из кнопки
+    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    await call_inline.message.answer(text)
+    await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
+
+
+# Шаг 5 (отправка формы)
+@dp.callback_query_handler(text='s5b1', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки Записаться s5b1 """
+    func.Print_LOG("Обработка inline-кнопки Записаться s5b1")
+    await call_inline.answer('Хорошо')
+    await sendFormAdmin(call_inline.message, state)
+    text = """Вы записаны.
+    Ждем вас по адресу Щапова 47, 1 этаж, 102 оф. в указанное время.
+    С собой сменную обувь."""
+    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step6) 
+    # await start(call_inline.message, state) # на старт
+    # await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance3)
+
+
+@dp.callback_query_handler(text='s5b2', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки Выбрать другое s5b2 """
+    func.Print_LOG("Обработка inline-кнопки Выбрать другое s5b2")
+    await call_inline.answer('Хорошо')
+    await start(call_inline.message, state) # на старт
+
+
+# Шаг 6 (вернуться в начало)
+@dp.callback_query_handler(text='s6b1', state=StateGroupFSM.user_state_default)
+async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
+    """ Обработка inline-кнопки Вернуться в начало s6b1 """
+    func.Print_LOG("Обработка inline-кнопки Вернуться в начало s6b1")
+    await call_inline.answer('Хорошо')
+    await start(call_inline.message, state) # на старт
+
+
 ###################################################################################################
 # Показ данных
 ###################################################################################################
@@ -148,17 +653,26 @@ async def buttonTimetableMess(message: types.Message, state: FSMContext):
 @dp.message_handler(Text(equals="Афиша"), state=StateGroupFSM.user_state_default)
 async def buttonTimetableMess(message: types.Message):
     """ Показывает Афишу. """
-    print('кнопка афиша')
+    func.Print_LOG("кнопка афиша")
     photo = func.ExecuteSQL_getImage('poster')
     await bot.send_photo(message.from_user.id, photo)
 
 
 @dp.message_handler(Text(equals="Показ: Расписание"), state=StateGroupFSM.user_state_admin)
 @dp.message_handler(Text(equals="Расписание"), state=StateGroupFSM.user_state_default)
-async def buttonTimetableMess(message: types.Message):
-    """ Показывает расписание. """
+async def buttonTimetable(message: types.Message):
+    """ Показывает Расписание.
+    
+    До того как я спользовал инлайн-кнопку кнопку s1b2 (Расписание),
+    работал такой метод: await bot.send_photo(message.from_user.id, photo),
+    но с добвлением кнопки я переделал метод на текущий, так-как иначе вызов
+    этого метода из инлаайн-кнопки s1b2 не работал. В ошибке говорилось
+    о том, что бот не может писать боту. То-есть из простой кнопки работало,
+    а из инлайн нет. Но теперь работает в обоих случаях. Тоесть в место
+    from_user.id я использую chat.id."""
+    func.Print_LOG("кнопка Расписание")
     photo = func.ExecuteSQL_getImage('timetable')
-    await bot.send_photo(message.from_user.id, photo)
+    await bot.send_photo(message.chat.id, photo)
 
 
 @dp.message_handler(Text(equals="Показ: О нас"), state=StateGroupFSM.user_state_admin)
@@ -324,16 +838,16 @@ async def edit_img_poster(message: types.Message):
 
 @dp.message_handler(state=StateGroupFSM.user_state_default)
 async def all_mess_state_default(message: types.Message):
-    """ Отвечает на любые сообщения, если состояние не default.
+    """ Отвечает на любые сообщения, если состояние default.
     reply_markup=keyboard - показывает клавиатуру """
     await message.answer('Используйте кнопки.', reply_markup=keyboard)
 
 
 @dp.message_handler()
-async def all_mess_state_default(message: types.Message):
-    """ Отвечает на любые сообщения, если состояние не default"""
-    await message.answer('Переброска на Start')
-    await start(message)
+async def all_mess_state_default(message: types.Message, state: FSMContext):
+    """ Отвечает на любые сообщения, если состояние не default"""    
+    await start(message, state)
+    func.Print_LOG("Переброска на Start")
 
 
 @dp.message_handler(state=StateGroupFSM.user_state_admin)
