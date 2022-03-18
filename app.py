@@ -64,12 +64,30 @@ class StateGroupFSM(StatesGroup):
 
 async def InItStateUser(message: types.Message, state: FSMContext):
     """ Инициирует данные пользователя """    
-    await state.update_data(userID=message.from_user.id)
+
+    # await state.update_data(userID=message.from_user.id)
+    # await state.update_data(userName=message.from_user.username)
+    # await state.update_data(firstName=message.from_user.first_name)
+    # await state.update_data(lastName=message.from_user.last_name)
+    
+    await state.update_data(userID=message.chat.id)
     await state.update_data(userName=message.chat.username)
+    await state.update_data(firstName=message.chat.first_name)
+    await state.update_data(lastName=message.chat.last_name)
+
+
+    # await state.update_data(userName=message.chat.username)
     await state.update_data(userDanceSelect='not selected')
     await state.update_data(userDaySelect='not selected')
     await state.update_data(userContac='no')
     func.Print_LOG("Инициирует данные пользователя")
+
+    # print('INIT')
+    # # print(message)
+    # for i in message:
+    #     for j in i:
+    #         print(j)
+    # print('===================')
 
     # await state.update_data(userStatus='registr')
     # await state.update_data(idWord='no')
@@ -174,7 +192,7 @@ inline_but_kviz_step2_b2 = types.InlineKeyboardButton(
     text='Начну сольно (только для девушек)',
     callback_data='s2b2')
 inline_but_kviz_step2_b3 = types.InlineKeyboardButton(
-    text='Хочу в паре, но пару нет',
+    text='Хочу в паре, но пары нет',
     callback_data='s2b3')
 
 inline_key_kviz_step2.add(inline_but_kviz_step2_b1)
@@ -506,24 +524,24 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     func.Print_LOG("Обработка inline-кнопки s3b4 (Пока не разбираюсь)")    
     await call_inline.answer('Хорошо')
     text = """
-    Бачата — это демонстрация мужественности и силы партнёра по отношению
-    к женственности и соблазнительности партнёрши.
-    Бачата имеет упрощенную хореографию, поэтому этот танец отлично подходит
-    в качестве танца для начинающих. Но, несмотря на всю свою простоту и легкость,
-    бачата является довольно разнообразным и богатым техникой танцем.
-    
-    Современная кизомба – это сексуальный непринужденный танец,
-    который позволяет чувствовать своего партнера, малейшие его движения и желания.
-    Кизомба не без причины назван самым сексуальным танцем 21 века и находится на пике
-    популярности, ее танцуют в ночных клубах, на дискотеках, на вечеринках!
+Бачата — это демонстрация мужественности и силы партнёра по отношению
+к женственности и соблазнительности партнёрши.
+Бачата имеет упрощенную хореографию, поэтому этот танец отлично подходит
+в качестве танца для начинающих. Но, несмотря на всю свою простоту и легкость,
+бачата является довольно разнообразным и богатым техникой танцем.
 
-    Сальса помогает проще относиться к жизни! Кубинцы говорят, что европейцы танцуют
-    сальсу потому, что хотят научиться у кубинцев веселиться. И это абсолютная правдаМы,
-    жители холодного и неприветливого климата совершенно забыли, что для развлечения и
-    веселья нужно всего-то: музыка, азарт и улыбка.
-    
-    Выберите направление танца
-    """
+Современная кизомба – это сексуальный непринужденный танец,
+который позволяет чувствовать своего партнера, малейшие его движения и желания.
+Кизомба не без причины назван самым сексуальным танцем 21 века и находится на пике
+популярности, ее танцуют в ночных клубах, на дискотеках, на вечеринках!
+
+Сальса помогает проще относиться к жизни! Кубинцы говорят, что европейцы танцуют
+сальсу потому, что хотят научиться у кубинцев веселиться. И это абсолютная правдаМы,
+жители холодного и неприветливого климата совершенно забыли, что для развлечения и
+веселья нужно всего-то: музыка, азарт и улыбка.
+
+Выберите направление танца
+"""
     await call_inline.message.answer(text, reply_markup=inline_key_kviz_step3)
 
 
@@ -534,7 +552,8 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b1")
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b1.text) # берём из кнопки
-    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -545,7 +564,8 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b2")
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b2.text) # берём из кнопки
-    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -556,7 +576,8 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b3")
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b3.text) # берём из кнопки
-    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -566,7 +587,8 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b4")
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b4.text) # берём из кнопки
-    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -576,7 +598,8 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b5")
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b5.text) # берём из кнопки
-    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -587,7 +610,8 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b6")
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b6.text) # берём из кнопки
-    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -598,7 +622,8 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b7")
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b7.text) # берём из кнопки
-    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -609,7 +634,8 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     func.Print_LOG("Обработка inline-кнопки выбора дня недели и времени s4b8")
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b8.text) # берём из кнопки
-    text = 'Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер.'
+    text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -643,7 +669,18 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     """ Обработка inline-кнопки Вернуться в начало s6b1 """
     func.Print_LOG("Обработка inline-кнопки Вернуться в начало s6b1")
     await call_inline.answer('Хорошо')
+    
+    # print('s6b1 Вернуться в начало')
+    # for i in call_inline.message:
+    #     for j in i:
+    #         print(j)
+    # print('-------------------')
+
+    # await start(call_inline.message, state) # на старт
     await start(call_inline.message, state) # на старт
+    
+
+    # print(call_inline.message)
 
 
 ###################################################################################################

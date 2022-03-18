@@ -62,7 +62,8 @@ async def runAdmin(message: types.Message, keyboard_admin):
     и переключает на админ-клавиатуру."""
     admin_id_lysov = 80315171  # мой id
     admin_id_vladimir = 434967278 # id Владимира
-    user_id = message.from_user.id  # узнать id пользователя
+    # user_id = message.from_user.id  # узнать id пользователя
+    user_id = message.chat.id  # узнать id пользователя
     print(user_id)
     if (user_id == admin_id_lysov or user_id == admin_id_vladimir):
         await StateGroupFSM.user_state_admin.set()
@@ -112,12 +113,16 @@ async def createFormAdmin (message: types.Message, state: FSMContext) -> str:
     allUserData = await state.get_data() # загружаем статусы пользователя
     userID = str(allUserData['userID'])
     userName = str(allUserData['userName'])
+    firstName = str(allUserData['firstName'])
+    lastName = str(allUserData['lastName'])
     userDanceSelect = str(allUserData['userDanceSelect'])
     userDaySelect = str(allUserData['userDaySelect'])
     userContac = str(allUserData['userContac'])
     form = ('Анкета:\n' + 
     'userID: ' + userID + '\n' + 
     'userName: ' + userName + '\n' +
+    'firstName: ' + firstName + '\n' +
+    'lastName: ' + lastName + '\n' +
     'userDanceSelect: ' + userDanceSelect + '\n' +
     'userDaySelect: ' + userDaySelect + '\n' +
     'userContac: ' + userContac)
