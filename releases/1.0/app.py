@@ -274,7 +274,7 @@ inline_key_kviz_step4_dance4.add(inline_but_kviz_step4_b8)
 inline_key_kviz_step5 = types.InlineKeyboardMarkup()
 
 inline_but_kviz_step5_b1 = types.InlineKeyboardButton(
-    text='Оставить заявку',
+    text='Записаться',
     callback_data='s5b1')
 
 inline_but_kviz_step5_b2 = types.InlineKeyboardButton(
@@ -555,7 +555,7 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b1.text) # берём из кнопки
     text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
-    + 'В конце нажмите кнопку «Оставить заявку».')
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -567,7 +567,7 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b2.text) # берём из кнопки
     text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
-    + 'В конце нажмите кнопку «Оставить заявку».')
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -579,7 +579,7 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b3.text) # берём из кнопки
     text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
-    + 'В конце нажмите кнопку «Оставить заявку».')
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -590,7 +590,7 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b4.text) # берём из кнопки
     text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
-    + 'В конце нажмите кнопку «Оставить заявку».')
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -601,7 +601,7 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b5.text) # берём из кнопки
     text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
-    + 'В конце нажмите кнопку «Оставить заявку».')
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -613,7 +613,7 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b6.text) # берём из кнопки
     text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
-    + 'В конце нажмите кнопку «Оставить заявку».')
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -625,7 +625,7 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b7.text) # берём из кнопки
     text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
-    + 'В конце нажмите кнопку «Оставить заявку».')
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -637,7 +637,7 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     await call_inline.answer('Хорошо')
     await state.update_data(userDaySelect=inline_but_kviz_step4_b8.text) # берём из кнопки
     text = ('Напишите Ваш номер телефона и имя. В течении суток с вами свяжется ваш тренер. '
-    + 'В конце нажмите кнопку «Оставить заявку».')
+    + 'В конце нажмите кнопку «Записаться».')
     await call_inline.message.answer(text)
     await StateGroupFSM.user_state_waiting_contacts.set() # состояние: жду контакты
 
@@ -649,7 +649,9 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     func.Print_LOG("Обработка inline-кнопки Записаться s5b1")
     await call_inline.answer('Хорошо')
     await sendFormAdmin(call_inline.message, state)
-    text = """Ваша заявка принята. Мы с вами свяжемся в течение суток."""
+    text = """Вы записаны.
+    Ждем вас по адресу Щапова 47, 1 этаж, 102 оф. в указанное время.
+    С собой сменную обувь."""
     await call_inline.message.answer(text, reply_markup=inline_key_kviz_step6) 
     # await start(call_inline.message, state) # на старт
     # await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance3)

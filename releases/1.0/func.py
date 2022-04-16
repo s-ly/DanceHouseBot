@@ -62,11 +62,10 @@ async def runAdmin(message: types.Message, keyboard_admin):
     и переключает на админ-клавиатуру."""
     admin_id_lysov = 80315171  # мой id
     admin_id_vladimir = 434967278 # id Владимира
-    admin_id_linda = 1170918217 # id Линды
     # user_id = message.from_user.id  # узнать id пользователя
     user_id = message.chat.id  # узнать id пользователя
     print(user_id)
-    if (user_id == admin_id_lysov or user_id == admin_id_vladimir or user_id == admin_id_linda):
+    if (user_id == admin_id_lysov or user_id == admin_id_vladimir):
         await StateGroupFSM.user_state_admin.set()
         await message.answer('Вход в админку', reply_markup=keyboard_admin)
     else:
