@@ -302,8 +302,10 @@ async def sendFormAdmin(message: types.Message, state: FSMContext):
     form = await func.createFormAdmin(message, state)
     admin_id = 80315171 # я, Вероника 1837933533
     admin_id_vladimir = 434967278 # id Владимира
+    admin_id_linda = 1170918217 # id Линды
     await bot.send_message(admin_id, form)
     await bot.send_message(admin_id_vladimir, form)
+    await bot.send_message(admin_id_linda, form)
 
 
 @dp.message_handler(commands=['start'], state='*')
