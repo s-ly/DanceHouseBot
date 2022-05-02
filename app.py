@@ -2,7 +2,7 @@
 # Школа танцев.
 
 from email import message
-from re import X
+# from re import X
 from unittest.mock import call
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters import state
@@ -36,7 +36,6 @@ from aiogram.utils.markdown import italic, code, text
 # import Texts           # мой модуль, хранит текст
 import func            # мой модуль, функции
 
-
 # Файл MyToken.py содержит две строки:
 # myToken = 'тут токен'
 # testToken = 'тут токен'
@@ -63,37 +62,15 @@ class StateGroupFSM(StatesGroup):
 
 
 async def InItStateUser(message: types.Message, state: FSMContext):
-    """ Инициирует данные пользователя """    
-
-    # await state.update_data(userID=message.from_user.id)
-    # await state.update_data(userName=message.from_user.username)
-    # await state.update_data(firstName=message.from_user.first_name)
-    # await state.update_data(lastName=message.from_user.last_name)
-    
+    """ Инициирует данные пользователя """        
     await state.update_data(userID=message.chat.id)
     await state.update_data(userName=message.chat.username)
     await state.update_data(firstName=message.chat.first_name)
     await state.update_data(lastName=message.chat.last_name)
-
-
-    # await state.update_data(userName=message.chat.username)
     await state.update_data(userDanceSelect='not selected')
     await state.update_data(userDaySelect='not selected')
     await state.update_data(userContac='no')
     func.Print_LOG("Инициирует данные пользователя")
-
-    # print('INIT')
-    # # print(message)
-    # for i in message:
-    #     for j in i:
-    #         print(j)
-    # print('===================')
-
-    # await state.update_data(userStatus='registr')
-    # await state.update_data(idWord='no')
-    # await state.update_data(translatDir='no')
-    # await state.update_data(questionWord='no')
-    # await state.update_data(showkeyboard='true')
 
 
 ###################################################################################################
@@ -105,12 +82,13 @@ async def InItStateUser(message: types.Message, state: FSMContext):
 # keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 # keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+button_main = KeyboardButton('На главную')
 button_about = KeyboardButton('О нас')
 button_price = KeyboardButton('Прайс-лист')
 button_contact = KeyboardButton('Контакты')
 button_timetable = KeyboardButton('Расписание')
 button_poster = KeyboardButton('Афиша')
-keyboard.add(button_about, button_price, button_contact, button_timetable, button_poster)
+keyboard.add(button_main, button_about, button_price, button_contact, button_timetable, button_poster)
 
 
 # Клавиатура для админки
@@ -139,21 +117,6 @@ inline_but_web = types.InlineKeyboardButton(
     text='Записаться на пробное занятие',
     url='https://kazandanceschool.ru/')
 inline_key_contacts.add(inline_but_web)
-
-
-# inline_keyboard_test = types.InlineKeyboardMarkup()
-# inline_button_test = types.InlineKeyboardButton(text='1', callback_data='1')
-# inline_button_test2 = types.InlineKeyboardButton(text='2', url='https://vk.com/s.lysov')
-# inline_keyboard_test.add(inline_button_test, inline_button_test2)
-
-
-# @dp.callback_query_handler(text='1', state='*')
-# async def process_callback_button1(call_inline: types.CallbackQuery):
-#     """ Обработка inline-кнопки. 
-#     call_inline.answer(...) - выводит окошко с надписью, что бы откллчить таймер кнопки,
-#     но можно просто - await call_inline.answer()."""
-#     print("Обработка inline-кнопки")
-#     await call_inline.answer()
 
 
 # Инлайн-клавиатура для квиза, шаг-1 (Здравствуйте)
@@ -247,10 +210,10 @@ inline_but_kviz_step4_b6 = types.InlineKeyboardButton(
     text='Четверг 20:30',
     callback_data='s4b6')
 inline_but_kviz_step4_b7 = types.InlineKeyboardButton(
-    text='Вторник 18:00',
+    text='Среда 18:30',
     callback_data='s4b7')
 inline_but_kviz_step4_b8 = types.InlineKeyboardButton(
-    text='Суббота 18:00',
+    text='Пятница 18:30',
     callback_data='s4b8')
 
 # Бачата
@@ -353,8 +316,7 @@ async def waitingContacts(message: types.Message, state: FSMContext):
     textForm = await func.confirmationForm(message, state)
     # await message.answer(textForm)
     await message.answer(textForm, reply_markup=inline_key_kviz_step5)
-    await StateGroupFSM.user_state_default.set() # Инициирует состояние пользователя default
-    
+    await StateGroupFSM.user_state_default.set() # Инициирует состояние пользователя default    
 
 
 ###################################################################################################
@@ -434,7 +396,6 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     await call_inline.answer('Хорошо')  
     text = ("Выберите направление танца")  
     # await call_inline.message.answer(text)
-    # await start(call_inline.message, state)
     await call_inline.message.answer(text, reply_markup=inline_key_kviz_step3)
 
 
@@ -447,15 +408,14 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     гибкими и артистичными. Танцы, как ничто иное, помогают избавиться от комплексов
     и полюбить свое тело.
     Расписание занятий начинающей группы по Lady Style:
-    Вторник 18:00
-    Суббота 18:00
+    Среда 18:30
+    Пятница 18:30
     Стоимость пробного урока 350р
     На какой день вас записать?"""
     await call_inline.answer('Хорошо')    
     await state.update_data(userDanceSelect='Lady Style')
     # await sendFormAdmin(call_inline.message, state)
     await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance4)
-    # await start(call_inline.message, state)
 
 
 @dp.callback_query_handler(text='s2b3', state=StateGroupFSM.user_state_default)
@@ -467,7 +427,6 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     "Подберем на занятии. Выберите направление танца")  
     # await call_inline.message.answer(text)
     await call_inline.message.answer(text, reply_markup=inline_key_kviz_step3)
-    # await start(call_inline.message, state)
 
 
 # Шаг 3
@@ -484,8 +443,6 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     await state.update_data(userDanceSelect='Бачата')
     # await sendFormAdmin(call_inline.message, state)
     await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance1)
-    # await call_inline.message.answer(text)
-    # await start(call_inline.message, state) # на старт временно
 
 
 @dp.callback_query_handler(text='s3b2', state=StateGroupFSM.user_state_default)
@@ -501,7 +458,6 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     await state.update_data(userDanceSelect='Сальса')
     # await sendFormAdmin(call_inline.message, state)
     await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance2)
-    # await start(call_inline.message, state) # на старт временно
 
 
 @dp.callback_query_handler(text='s3b3', state=StateGroupFSM.user_state_default)
@@ -517,7 +473,6 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     await state.update_data(userDanceSelect='Кизомба')
     # await sendFormAdmin(call_inline.message, state)
     await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance3)
-    # await start(call_inline.message, state) # на старт временно
 
 
 @dp.callback_query_handler(text='s3b4', state=StateGroupFSM.user_state_default)
@@ -669,18 +624,7 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     """ Обработка inline-кнопки Вернуться в начало s6b1 """
     func.Print_LOG("Обработка inline-кнопки Вернуться в начало s6b1")
     await call_inline.answer('Хорошо')
-    
-    # print('s6b1 Вернуться в начало')
-    # for i in call_inline.message:
-    #     for j in i:
-    #         print(j)
-    # print('-------------------')
-
-    # await start(call_inline.message, state) # на старт
     await start(call_inline.message, state) # на старт
-    
-
-    # print(call_inline.message)
 
 
 ###################################################################################################
@@ -734,6 +678,13 @@ async def buttonContactMess(message: types.Message):
     Дополнительно показывает инлайн-клавиатуру."""
     await message.answer(func.ExecuteSQL(3), reply_markup=inline_key_contacts)
     print('кнопка отправленна')
+
+
+@dp.message_handler(Text(equals="На главную"), state=StateGroupFSM.user_state_default)
+async def buttonAboutMess(message: types.Message, state: FSMContext):
+    """ Обрабатывает 'На главную'. """
+    await start(message, state)
+    func.Print_LOG("Переброска на Start (На главную)")
 
 
 ###################################################################################################
