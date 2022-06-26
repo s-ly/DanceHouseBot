@@ -1,5 +1,24 @@
-# Телеграм бот t.me/DanceHouseBot
-# Школа танцев.
+###################################################################################################
+# NOTE
+###################################################################################################
+# Телеграм бот школы танцев t.me/DanceHouseBot
+# Версия 1.1 дата 2022.06.26
+# Главный модуль
+
+# Файлы и папки (только рабочие):
+    # app.py - главный модуль
+    # admin.py - главный модуль админки
+    # func.py - модуль с методами
+    # sql.py - работа с БД
+    # MyToken.py - хранит токены
+    # DanceHouseBot.db - база данных
+    # templates
+        # base.html - базовый шаблон для админки
+        # index.html - шаблон для index.html
+        # new_text.html - шаблон отредактрованного текста
+        # new_img.html - шаблон загруженных картинок
+###################################################################################################
+
 
 from email import message
 # from re import X
@@ -35,19 +54,28 @@ from aiogram.utils.markdown import italic, code, text
 
 # import Texts           # мой модуль, хранит текст
 import func            # мой модуль, функции
+import sql             # мой модуль работы с БД
 
+
+###################################################################################################
+# Переключение токенов
+###################################################################################################
 # Файл MyToken.py содержит две строки:
 # myToken = 'тут токен'
 # testToken = 'тут токен'
 # При разработке использеум test, для работы my.
 # в git его игнорируем, а в место пушим зашифрованный архив.
+
 API_TOKEN = MyToken.myToken # рабочий бот
 # API_TOKEN = MyToken.testToken # тестовый бот
+###################################################################################################
+
 
 # Initialize bot and dispatcher
 storage = MemoryStorage() # место хранения контекста в ОЗУ
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=storage)
+
 
 # создаём состояния
 class StateGroupFSM(StatesGroup):
@@ -275,15 +303,12 @@ async def sendFormAdmin(message: types.Message, state: FSMContext):
 async def start(message: types.Message, state: FSMContext):
     """ Отвечает на команду: /start когда состояние пользователя не установлено.
     Устанавливает состояние пользователя на user_state_default."""
-    text1 = 'Здравствуйте!'
-    text2 = ('Вас приветствует студия танцев «Dance House». ' + 
-    'У нас идет набор в начинающие группы по Бачате, Сальсе, Кизомбе и Леди стайл. ' +
-    'Чем мы можем Вам помочь?')
+    text_hello = 'Здравствуйте!'
     await InItStateUser(message, state) # Инициирует данные пользователя
     await StateGroupFSM.user_state_default.set() # Инициирует состояние пользователя
     # await message.answer(func.ExecuteSQL(4), reply_markup=keyboard) 
-    await message.answer(text1, reply_markup=keyboard) 
-    await message.answer(text2, reply_markup=inline_key_kviz_step1)
+    await message.answer(text_hello, reply_markup=keyboard) 
+    await message.answer(sql.sql_read_text(4, 'message'), reply_markup=inline_key_kviz_step1)
 
 
 @dp.message_handler(commands=['gs'], state='*')
@@ -635,7 +660,8 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
 async def buttonTimetableMess(message: types.Message):
     """ Показывает Афишу. """
     func.Print_LOG("кнопка афиша")
-    photo = func.ExecuteSQL_getImage('poster')
+    # photo = func.ExecuteSQL_getImage('poster')
+    photo = sql.sql_read_img('poster')
     await bot.send_photo(message.from_user.id, photo)
 
 
@@ -652,7 +678,8 @@ async def buttonTimetable(message: types.Message):
     а из инлайн нет. Но теперь работает в обоих случаях. Тоесть в место
     from_user.id я использую chat.id."""
     func.Print_LOG("кнопка Расписание")
-    photo = func.ExecuteSQL_getImage('timetable')
+    # photo = func.ExecuteSQL_getImage('timetable')
+    photo = sql.sql_read_img('timetable')
     await bot.send_photo(message.chat.id, photo)
 
 
@@ -660,7 +687,8 @@ async def buttonTimetable(message: types.Message):
 @dp.message_handler(Text(equals="О нас"), state=StateGroupFSM.user_state_default)
 async def buttonAboutMess(message: types.Message):
     """ Показывает О нас. """
-    await message.answer(func.ExecuteSQL(1))
+    # await message.answer(func.ExecuteSQL(1))
+    await message.answer(sql.sql_read_text(1, 'message'))
 
 
 @dp.message_handler(Text(equals="Показ: Прайс-лист"), state=StateGroupFSM.user_state_admin)
@@ -668,7 +696,8 @@ async def buttonAboutMess(message: types.Message):
 async def buttonPriceMess(message: types.Message):
     """ Показывает Прайс-лист.
     # code(...) и parse_mode=... форматируют текст моноширно. """
-    await message.answer(code(func.ExecuteSQL(2)), parse_mode=types.ParseMode.MARKDOWN_V2)
+    # await message.answer(code(func.ExecuteSQL(2)), parse_mode=types.ParseMode.MARKDOWN_V2)
+    await message.answer(code(sql.sql_read_text(2, 'message')), parse_mode=types.ParseMode.MARKDOWN_V2)
 
 
 @dp.message_handler(Text(equals="Показ: Контакты"), state=StateGroupFSM.user_state_admin)
@@ -676,7 +705,8 @@ async def buttonPriceMess(message: types.Message):
 async def buttonContactMess(message: types.Message):
     """ Показывает Контакты.
     Дополнительно показывает инлайн-клавиатуру."""
-    await message.answer(func.ExecuteSQL(3), reply_markup=inline_key_contacts)
+    # await message.answer(func.ExecuteSQL(3), reply_markup=inline_key_contacts)
+    await message.answer(sql.sql_read_text(3, 'message'), reply_markup=inline_key_contacts)
     print('кнопка отправленна')
 
 
@@ -740,7 +770,8 @@ async def buttonContactMess(message: types.Message):
 async def buttonContactMess(message: types.Message):
     """ Отвечает на любые сообщения в состоятии:  жду ввод текста 'О нас'. 
     Возвращает пользователя администратора в состояние: admin. """
-    await message.answer(func.ExecuteSQL_update(1, message.text))
+    # await message.answer(func.ExecuteSQL_update(1, message.text))
+    await message.answer(sql.ExecuteSQL_update(1, message.text))
     await message.answer('Пункт Отредактирован')
     await StateGroupFSM.user_state_admin.set()
 
@@ -749,7 +780,8 @@ async def buttonContactMess(message: types.Message):
 async def buttonContactMess(message: types.Message):
     """ Отвечает на любые сообщения в состоятии:  жду ввод текста 'Прайс-лист'. 
     Возвращает пользователя администратора в состояние: admin. """
-    await message.answer(func.ExecuteSQL_update(2, message.text))
+    # await message.answer(func.ExecuteSQL_update(2, message.text))
+    await message.answer(sql.ExecuteSQL_update(2, message.text))
     await message.answer('Пункт Отредактирован')
     await StateGroupFSM.user_state_admin.set()
 
@@ -758,7 +790,8 @@ async def buttonContactMess(message: types.Message):
 async def buttonContactMess(message: types.Message):
     """ Отвечает на любые сообщения в состоятии:  жду ввод текста 'Контакты'. 
     Возвращает пользователя администратора в состояние: admin. """
-    await message.answer(func.ExecuteSQL_update(3, message.text))
+    # await message.answer(func.ExecuteSQL_update(3, message.text))
+    await message.answer(sql.ExecuteSQL_update(3, message.text))
     await message.answer('Пункт Отредактирован')
     await StateGroupFSM.user_state_admin.set()
 
@@ -788,7 +821,8 @@ async def edit_img_timetable(message: types.Message):
 
     if cont_type == 'photo':
         await message.photo[-1].download('img.jpg')
-        func.ExecuteSQL_Image_update('timetable')
+        # func.ExecuteSQL_Image_update('timetable')
+        sql.ExecuteSQL_Image_update('timetable')
         await message.answer('Пункт отредактирован')
         await StateGroupFSM.user_state_admin.set()
     else:
@@ -815,7 +849,8 @@ async def edit_img_poster(message: types.Message):
 
     if cont_type == 'photo':
         await message.photo[-1].download('img.jpg')
-        func.ExecuteSQL_Image_update('poster')
+        # func.ExecuteSQL_Image_update('poster')
+        sql.ExecuteSQL_Image_update('poster')
         await message.answer('Пункт отредактирован')
         await StateGroupFSM.user_state_admin.set()
     else:
