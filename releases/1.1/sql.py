@@ -8,7 +8,7 @@
 
 
 import sqlite3 as sql
-from tkinter import image_names
+# from tkinter import image_names
 
 
 def sql_read_text(key_id: int, column: str) -> str:

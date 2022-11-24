@@ -5,10 +5,10 @@ the_new_text_id_name - информация из скрытого поля (ка
 -->
 {% extends 'base.html' %}
 {% block body %}
-<h2>{{the_title}}</h2>
-<h2>{{the_new_text_id_name}}</h2>
-<h2>{{the_new_text}}</h2>
-<form action="/">    
+<h2>{{the_title_page}}</h2>
+<form action="/">  
+    {{the_new_text_id_name}}<br>  
+    <textarea disabled name="the_new_text" rows="6" cols="50">{{the_new_text}}</textarea><br>
     <input type="submit" value="Вернуться">    
 </form>
 {% endblock %}

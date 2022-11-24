@@ -1,0 +1,16 @@
+<!-- 
+Страница вызывается при нажатии кнопки Послать. Наследуется от формы base.html
+Показывает Загруженную картинку. При нажатии кнопки Вернуться, ведёт на главную.
+the_new_text_id_name - информация из скрытого поля (какой блок текста редактировали).
+-->
+{% extends 'base.html' %}
+{% block body %}
+    <!-- <h2>{{the_title}}</h2> -->
+    <!-- <h2>{{the_new_text_id_name}}</h2> -->
+    <!-- <h2>{{the_new_text}}</h2> -->
+    <h2>{{the_new_img_name}}</h2>
+    <img src="{{ url_for('static', filename = the_new_img_name) }}"><br>
+    <form action="/">    
+        <input type="submit" value="Вернуться">    
+    </form>
+{% endblock %}

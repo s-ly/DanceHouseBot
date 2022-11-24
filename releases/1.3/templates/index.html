@@ -1,0 +1,49 @@
+<!-- 
+Главная страница. Наследуется от формы base.html
+-->
+
+{% extends 'base.html' %}
+{% block body %}     
+
+
+    <!-- Меню. Принимаем список словарей. -->
+    {% for i in the_menu %}
+        <a class="menu" href="{{i.url}}">{{i.name}}</a>
+    {% endfor %}
+
+
+    <h2>{{the_title_page}}</h2> <!-- Подзаголовок страницы -->
+   
+
+    <!-- Цикл, формирует несколько блоков текста из переданного словаря текстов -->
+    <!-- input type="hidden" - скрытое поле для определения, какой блок редактировали. -->
+    <h3>Редактирование текстов:</h3>
+    {% for k, v in the_text_list.items() %}
+        <form method="post" action="/new_text">
+            <fieldset>
+                <input type="hidden" name="new_text_id_name" value={{k}}>
+                <legend>{{k}}</legend>
+                <textarea name="new_text" rows="5" cols="50">{{v}}</textarea><br>
+                <input type="submit" value="Применить изменения">
+            </fieldset>
+        </form>
+    {% endfor %}
+
+    
+    <!-- Загрузка картинки из static -->
+    <!-- Цикл, формирует несколько блоков картинок из переданного словаря картинок -->
+    <h3>Редактирование изображений:</h3>    
+    {% for k, v in the_img_dict.items() %}
+        <form method="POST" action="/new_img" enctype="multipart/form-data">
+            <fieldset>
+                <legend>{{k}}</legend>
+                <img src="{{ url_for('static', filename=v) }}" width="500"><br>
+                <input type="hidden" name="new_img_name_db" value={{k}}>
+                <input type="hidden" name="new_img_name" value={{v}}>
+                <input name="new_img" type="file">
+                <input type="submit" value="Загрузить">
+            </fieldset>
+        </form>
+    {% endfor %}
+
+{% endblock %}

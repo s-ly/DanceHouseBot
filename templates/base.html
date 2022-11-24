@@ -3,11 +3,13 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link type="text/css" href="{{ url_for('static', filename='css/styles.css')}}" rel="stylesheet" />
         <title>
             {{the_title}}
         </title>
     </head>    
     <body>
+        <h1>{{the_title}}</h1>
         {% block body %}{% endblock %}
         <h5>{{the_about}}</h5>
     </body>

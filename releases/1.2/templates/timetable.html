@@ -1,0 +1,29 @@
+<!-- 
+Редактирование расписания. Наследуется от формы base.html
+-->
+
+{% extends 'base.html' %}
+{% block body %}
+
+    <h2>{{the_title_page}}</h2> <!-- Подзаголовок страницы -->
+
+    <!-- Меню. Принимаем список словарей. -->
+    {% for i in the_menu %}
+        <a href="{{i.url}}">{{i.name}}</a>
+    {% endfor %}
+
+    <!-- Редактирование расписания -->
+    {% for i in the_timetable %}
+        <form method="post" action="/new_timetable">
+            <fieldset>
+                <legend>{{i.dance}}</legend>
+                <input type="hidden" name="dance" value={{i.dance}}>
+                <textarea name="timetable_dance" rows="6" cols="50">{{i.timetable_dance}}</textarea><br>
+                <textarea name="day1" rows="1" cols="50">{{i.day1}}</textarea><br>
+                <textarea name="day2" rows="1" cols="50">{{i.day2}}</textarea><br>
+                <input type="submit" value="Применить изменения">
+            </fieldset>
+        </form>
+    {% endfor %}
+
+{% endblock %}

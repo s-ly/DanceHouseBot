@@ -3,14 +3,21 @@
 -->
 
 {% extends 'base.html' %}
-{% block body %}
+{% block body %}     
 
-    <!-- Заголовок -->
-    <h2>{{the_title}}</h2>
-    
+
+    <!-- Меню. Принимаем список словарей. -->
+    {% for i in the_menu %}
+        <a class="menu" href="{{i.url}}">{{i.name}}</a>
+    {% endfor %}
+
+
+    <h2>{{the_title_page}}</h2> <!-- Подзаголовок страницы -->
+   
 
     <!-- Цикл, формирует несколько блоков текста из переданного словаря текстов -->
     <!-- input type="hidden" - скрытое поле для определения, какой блок редактировали. -->
+    <h3>Редактирование текстов:</h3>
     {% for k, v in the_text_list.items() %}
         <form method="post" action="/new_text">
             <fieldset>
@@ -25,8 +32,7 @@
     
     <!-- Загрузка картинки из static -->
     <!-- Цикл, формирует несколько блоков картинок из переданного словаря картинок -->
-    
-    
+    <h3>Редактирование изображений:</h3>    
     {% for k, v in the_img_dict.items() %}
         <form method="POST" action="/new_img" enctype="multipart/form-data">
             <fieldset>
@@ -39,8 +45,5 @@
             </fieldset>
         </form>
     {% endfor %}
-    
-    
-
 
 {% endblock %}

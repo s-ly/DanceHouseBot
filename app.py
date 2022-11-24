@@ -2,7 +2,7 @@
 # NOTE
 ###################################################################################################
 # Телеграм бот школы танцев t.me/DanceHouseBot
-# Версия 1.1 дата 2022.06.26
+# Версия 1.3 дата 2022.11.24
 # Главный модуль
 
 # Файлы и папки (только рабочие):
@@ -220,29 +220,21 @@ inline_key_kviz_step4_dance3 = types.InlineKeyboardMarkup()
 inline_key_kviz_step4_dance4 = types.InlineKeyboardMarkup()
 
 inline_but_kviz_step4_b1 = types.InlineKeyboardButton(
-    text='Вторник 19:00',
-    callback_data='s4b1')
+    text='из БД', callback_data='s4b1')
 inline_but_kviz_step4_b2 = types.InlineKeyboardButton(
-    text='Суббота 19:00',
-    callback_data='s4b2')
+    text='из БД', callback_data='s4b2')
 inline_but_kviz_step4_b3 = types.InlineKeyboardButton(
-    text='Среда 19:30',
-    callback_data='s4b3')
+    text='из БД', callback_data='s4b3')
 inline_but_kviz_step4_b4 = types.InlineKeyboardButton(
-    text='Пятница 19:30',
-    callback_data='s4b4')
+    text='из БД', callback_data='s4b4')
 inline_but_kviz_step4_b5 = types.InlineKeyboardButton(
-    text='Понедельник 20:30',
-    callback_data='s4b5')
+    text='из БД', callback_data='s4b5')
 inline_but_kviz_step4_b6 = types.InlineKeyboardButton(
-    text='Четверг 20:30',
-    callback_data='s4b6')
+    text='из БД', callback_data='s4b6')
 inline_but_kviz_step4_b7 = types.InlineKeyboardButton(
-    text='Среда 18:30',
-    callback_data='s4b7')
+    text='из БД', callback_data='s4b7')
 inline_but_kviz_step4_b8 = types.InlineKeyboardButton(
-    text='Пятница 18:30',
-    callback_data='s4b8')
+    text='из БД', callback_data='s4b8')
 
 # Бачата
 inline_key_kviz_step4_dance1.add(inline_but_kviz_step4_b1)
@@ -288,12 +280,12 @@ inline_key_kviz_step6.add(inline_but_kviz_step6_b1)
 
 @dp.message_handler(commands=['test'], state=StateGroupFSM.user_state_default)
 async def sendFormAdmin(message: types.Message, state: FSMContext):
-    """ отправить анкету админу """
+    """ Отправить анкету админам """
     func.Print_LOG("отправить анкету админу")
     form = await func.createFormAdmin(message, state)
-    admin_id = 80315171 # я, Вероника 1837933533
-    admin_id_vladimir = 434967278 # id Владимира
-    admin_id_linda = 1170918217 # id Линды
+    admin_id = 80315171            # id Я
+    admin_id_vladimir = 434967278  # id Владимира
+    admin_id_linda = 1170918217    # id Линды
     await bot.send_message(admin_id, form)
     await bot.send_message(admin_id_vladimir, form)
     await bot.send_message(admin_id_linda, form)
@@ -406,9 +398,10 @@ async def process_callback_button1(call_inline: types.CallbackQuery):
 
     В конце вызывается метод, как если бы нажали инлайн-кнопку 's1b1 (Как записаться)'."""
     func.Print_LOG("Обработка inline-кнопки s1b5 (Сколько это стоит)")
-    await call_inline.answer('Хорошо')    
-    text = ("Пробный урок 350 руб. " +
-    "По итогам пробного урока вам будут предложены различные виды абонементы")
+    await call_inline.answer('Хорошо')
+    text = sql.sql_read_text(18, 'message')    
+    # text = ("Пробный урок 350 руб. " +
+    # "По итогам пробного урока вам будут предложены различные виды абонементы")
     await call_inline.message.answer(text) 
     await callback_inline_but_s1b1(call_inline) # прыжек на Шаг 1
 
@@ -427,16 +420,13 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
 @dp.callback_query_handler(text='s2b2', state=StateGroupFSM.user_state_default)
 async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
     """ Обработка inline-кнопки s2b2 (Начну сольно (только для девушек))"""
+
+    # загружаем текст кнопок из БД
+    inline_but_kviz_step4_b7.text = sql.sql_read_text(15, 'message')
+    inline_but_kviz_step4_b8.text = sql.sql_read_text(16, 'message')
+
     func.Print_LOG("Обработка inline-кнопки s2b2 (Начну сольно (только для девушек)")
-    text = """Бачата Lady Style - танцевальное направление для всех девушек,
-    которые хотят научиться красиво двигаться под любую музыку, быть пластичными,
-    гибкими и артистичными. Танцы, как ничто иное, помогают избавиться от комплексов
-    и полюбить свое тело.
-    Расписание занятий начинающей группы по Lady Style:
-    Среда 18:30
-    Пятница 18:30
-    Стоимость пробного урока 350р
-    На какой день вас записать?"""
+    text = sql.sql_read_text(8, 'message')
     await call_inline.answer('Хорошо')    
     await state.update_data(userDanceSelect='Lady Style')
     # await sendFormAdmin(call_inline.message, state)
@@ -458,12 +448,13 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
 @dp.callback_query_handler(text='s3b1', state=StateGroupFSM.user_state_default)
 async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
     """ Обработка inline-кнопки s3b1 (Бачата)"""
+
+    # загружаем текст кнопок из БД
+    inline_but_kviz_step4_b1.text = sql.sql_read_text(9, 'message')
+    inline_but_kviz_step4_b2.text = sql.sql_read_text(10, 'message')
+
     func.Print_LOG("Обработка inline-кнопки s3b1 (Бачата)")
-    text = """Расписание занятий начинающей группы по Бачате:
-    Вторник 19:00
-    Суббота 19:00
-    Стоимость пробного урока 350р
-    На какой день вас записать?"""
+    text = sql.sql_read_text(5, 'message')
     await call_inline.answer('Хорошо')
     await state.update_data(userDanceSelect='Бачата')
     # await sendFormAdmin(call_inline.message, state)
@@ -473,12 +464,13 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
 @dp.callback_query_handler(text='s3b2', state=StateGroupFSM.user_state_default)
 async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
     """ Обработка inline-кнопки s3b2 (Сальса)"""
+
+    # загружаем текст кнопок из БД
+    inline_but_kviz_step4_b3.text = sql.sql_read_text(11, 'message')
+    inline_but_kviz_step4_b4.text = sql.sql_read_text(12, 'message')
+
     func.Print_LOG("Обработка inline-кнопки s3b2 (Сальса)")
-    text = """Расписание занятий начинающей группы по Сальсе:
-    Среда 19:30
-    Пятница 19:30
-    Стоимость пробного урока 350р
-    На какой день вас записать?"""
+    text = sql.sql_read_text(6, 'message')
     await call_inline.answer('Хорошо')
     await state.update_data(userDanceSelect='Сальса')
     # await sendFormAdmin(call_inline.message, state)
@@ -488,12 +480,13 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
 @dp.callback_query_handler(text='s3b3', state=StateGroupFSM.user_state_default)
 async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
     """ Обработка inline-кнопки s3b3 (Кизомба)"""
+
+        # загружаем текст кнопок из БД
+    inline_but_kviz_step4_b5.text = sql.sql_read_text(13, 'message')
+    inline_but_kviz_step4_b6.text = sql.sql_read_text(14, 'message')
+
     func.Print_LOG("Обработка inline-кнопки s3b3 (Кизомба)")
-    text = """Расписание занятий начинающей группы по Кизомбе:
-    Понедельник 20:30
-    Четверг 20:30
-    Стоимость пробного урока 350р
-    На какой день вас записать?"""
+    text = sql.sql_read_text(7, 'message')
     await call_inline.answer('Хорошо')
     await state.update_data(userDanceSelect='Кизомба')
     # await sendFormAdmin(call_inline.message, state)
@@ -505,25 +498,7 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     """ Обработка inline-кнопки s3b4 (Пока не разбираюсь)"""
     func.Print_LOG("Обработка inline-кнопки s3b4 (Пока не разбираюсь)")    
     await call_inline.answer('Хорошо')
-    text = """
-Бачата — это демонстрация мужественности и силы партнёра по отношению
-к женственности и соблазнительности партнёрши.
-Бачата имеет упрощенную хореографию, поэтому этот танец отлично подходит
-в качестве танца для начинающих. Но, несмотря на всю свою простоту и легкость,
-бачата является довольно разнообразным и богатым техникой танцем.
-
-Современная кизомба – это сексуальный непринужденный танец,
-который позволяет чувствовать своего партнера, малейшие его движения и желания.
-Кизомба не без причины назван самым сексуальным танцем 21 века и находится на пике
-популярности, ее танцуют в ночных клубах, на дискотеках, на вечеринках!
-
-Сальса помогает проще относиться к жизни! Кубинцы говорят, что европейцы танцуют
-сальсу потому, что хотят научиться у кубинцев веселиться. И это абсолютная правдаМы,
-жители холодного и неприветливого климата совершенно забыли, что для развлечения и
-веселья нужно всего-то: музыка, азарт и улыбка.
-
-Выберите направление танца
-"""
+    text = sql.sql_read_text(17, 'message')
     await call_inline.message.answer(text, reply_markup=inline_key_kviz_step3)
 
 
