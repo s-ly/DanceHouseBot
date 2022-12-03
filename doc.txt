@@ -1,0 +1,5 @@
+Описание Bot API см. На этой странице: https://core.telegram.org/bots/api.
+
+------------------
+https://kazandanceschool.ru/
+---------------
