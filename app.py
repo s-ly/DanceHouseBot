@@ -287,8 +287,8 @@ async def sendFormAdmin(message: types.Message, state: FSMContext):
     admin_id_vladimir = 434967278  # id Владимира
     admin_id_linda = 1170918217    # id Линды
     await bot.send_message(admin_id, form)
-    await bot.send_message(admin_id_vladimir, form)
-    await bot.send_message(admin_id_linda, form)
+    # await bot.send_message(admin_id_vladimir, form)
+    # await bot.send_message(admin_id_linda, form)
 
 
 @dp.message_handler(commands=['start'], state='*')
@@ -348,7 +348,12 @@ async def callback_inline_but_s1b1(call_inline: types.CallbackQuery):
     func.Print_LOG("Обработка inline-кнопки s1b1 (Как записаться)")
     await call_inline.answer('Хорошо')
     text = "Вы хотели бы танцевать в паре или сольно?"
-    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step2)
+    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step2)    
+    
+    # !!!!!!!!!!!!!!!!!!!!
+    # https://qna.habr.com/q/921043
+    # await bot.delete_message(call_inline.message.chat.id, call_inline.inline_message_id)
+
 
 
 @dp.callback_query_handler(text='s1b2', state=StateGroupFSM.user_state_default)
