@@ -2,7 +2,7 @@
 # NOTE
 ###################################################################################################
 # Телеграм бот школы танцев t.me/DanceHouseBot
-# Версия 1.4 alpha дата 2022.12.03
+# Версия 1.4 дата 2022.12.16
 # Главный модуль
 
 # Файлы и папки (только рабочие):
@@ -20,9 +20,9 @@
 ###################################################################################################
 
 
-from email import message
+# from email import message
 # from re import X
-from unittest.mock import call
+# from unittest.mock import call
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters import state
 # from aiogram.types import inline_keyboard
@@ -66,8 +66,8 @@ import sql             # мой модуль работы с БД
 # При разработке использеум test, для работы my.
 # в git его игнорируем, а в место пушим зашифрованный архив.
 
-# API_TOKEN = MyToken.myToken # рабочий бот
-API_TOKEN = MyToken.testToken # тестовый бот
+API_TOKEN = MyToken.myToken # рабочий бот
+# API_TOKEN = MyToken.testToken # тестовый бот
 ###################################################################################################
 
 
@@ -90,7 +90,13 @@ class StateGroupFSM(StatesGroup):
 
 
 async def InItStateUser(message: types.Message, state: FSMContext):
-    """ Инициирует данные пользователя """        
+    """
+    Инициирует данные пользователя.
+    Данные хранять в ОЗУ в объекте state: FSMContext.
+    Два последних, это списка с id сообщений и бота и пользователя.
+    По этим id можно удалять сообщения из чата. Ещё для удаления тредуется
+    id чата, для нас это userID.
+    """        
     await state.update_data(userID=message.chat.id)
     await state.update_data(userName=message.chat.username)
     await state.update_data(firstName=message.chat.first_name)
@@ -98,6 +104,11 @@ async def InItStateUser(message: types.Message, state: FSMContext):
     await state.update_data(userDanceSelect='not selected')
     await state.update_data(userDaySelect='not selected')
     await state.update_data(userContac='no')
+    
+    # Списки для храниния id сообщений. (для удаления)
+    # await state.update_data(messages_id_user=[])
+    await state.update_data(messages_id=[])
+
     func.Print_LOG("Инициирует данные пользователя")
 
 
@@ -287,8 +298,8 @@ async def sendFormAdmin(message: types.Message, state: FSMContext):
     admin_id_vladimir = 434967278  # id Владимира
     admin_id_linda = 1170918217    # id Линды
     await bot.send_message(admin_id, form)
-    # await bot.send_message(admin_id_vladimir, form)
-    # await bot.send_message(admin_id_linda, form)
+    await bot.send_message(admin_id_vladimir, form)
+    await bot.send_message(admin_id_linda, form)
 
 
 @dp.message_handler(commands=['start'], state='*')
@@ -452,8 +463,12 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
 # Шаг 3
 @dp.callback_query_handler(text='s3b1', state=StateGroupFSM.user_state_default)
 async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
-    """ Обработка inline-кнопки s3b1 (Бачата)"""
-
+    """
+    Обработка inline-кнопки s3b1 (Бачата)
+    obj_id - ссылка на ответ бота, из нё можно взять id.
+    """
+    await func.message_id_delete(bot, state)  # Удаляем сообщение с днями занятий.
+    
     # загружаем текст кнопок из БД
     inline_but_kviz_step4_b1.text = sql.sql_read_text(9, 'message')
     inline_but_kviz_step4_b2.text = sql.sql_read_text(10, 'message')
@@ -462,13 +477,18 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     text = sql.sql_read_text(5, 'message')
     await call_inline.answer('Хорошо')
     await state.update_data(userDanceSelect='Бачата')
-    # await sendFormAdmin(call_inline.message, state)
-    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance1)
+    obj_id = await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance1)
+    await func.message_id_save(obj_id, state)  # Сохраняем id ответа бота
+
 
 
 @dp.callback_query_handler(text='s3b2', state=StateGroupFSM.user_state_default)
 async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
-    """ Обработка inline-кнопки s3b2 (Сальса)"""
+    """
+    Обработка inline-кнопки s3b2 (Сальса)
+    obj_id - ссылка на ответ бота, из нё можно взять id.
+    """
+    await func.message_id_delete(bot, state)  # Удаляем сообщение с днями занятий.
 
     # загружаем текст кнопок из БД
     inline_but_kviz_step4_b3.text = sql.sql_read_text(11, 'message')
@@ -478,15 +498,19 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     text = sql.sql_read_text(6, 'message')
     await call_inline.answer('Хорошо')
     await state.update_data(userDanceSelect='Сальса')
-    # await sendFormAdmin(call_inline.message, state)
-    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance2)
+    obj_id = await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance2)
+    await func.message_id_save(obj_id, state)  # Сохраняем id ответа бота
 
 
 @dp.callback_query_handler(text='s3b3', state=StateGroupFSM.user_state_default)
 async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMContext):
-    """ Обработка inline-кнопки s3b3 (Кизомба)"""
+    """
+    Обработка inline-кнопки s3b3 (Кизомба)
+    obj_id - ссылка на ответ бота, из нё можно взять id.
+    """
+    await func.message_id_delete(bot, state)  # Удаляем сообщение с днями занятий.
 
-        # загружаем текст кнопок из БД
+    # загружаем текст кнопок из БД
     inline_but_kviz_step4_b5.text = sql.sql_read_text(13, 'message')
     inline_but_kviz_step4_b6.text = sql.sql_read_text(14, 'message')
 
@@ -494,8 +518,8 @@ async def process_callback_button1(call_inline: types.CallbackQuery, state: FSMC
     text = sql.sql_read_text(7, 'message')
     await call_inline.answer('Хорошо')
     await state.update_data(userDanceSelect='Кизомба')
-    # await sendFormAdmin(call_inline.message, state)
-    await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance3)
+    obj_id = await call_inline.message.answer(text, reply_markup=inline_key_kviz_step4_dance3)
+    await func.message_id_save(obj_id, state)  # Сохраняем id ответа бота
 
 
 @dp.callback_query_handler(text='s3b4', state=StateGroupFSM.user_state_default)

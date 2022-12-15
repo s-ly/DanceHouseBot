@@ -22,7 +22,7 @@ import sql             # мой модуль работы с БД
 
 app = Flask(__name__)
 
-about = 't.me/DanceHouseBot ver 1.3 | 2022.11.24'
+about = 't.me/DanceHouseBot ver 1.4 | 2022.12.16'
 # title = 'Админка - телеграм бот школы танцев t.me/DanceHouseBot'
 title = 'Админка - t.me/DanceHouseBot'
 menu = [
@@ -256,5 +256,5 @@ def questionnaires():
 
 
 if __name__ == "__main__":
-    # app.run(debug=True, host='81.163.31.153', port=5001)
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='81.163.31.153', port=5001)
+    # app.run(debug=True, host='0.0.0.0')
