@@ -2,7 +2,7 @@
 # NOTE
 ###################################################################################################
 # Телеграм бот школы танцев t.me/DanceHouseBot
-# Версия 1.4 дата 2022.12.16
+# Версия 1.4.1 дата 2023.02.01
 # Главный модуль
 
 # Файлы и папки (только рабочие):
@@ -402,8 +402,8 @@ async def process_callback_button1(call_inline: types.CallbackQuery):
 
     В конце вызывается метод, как если бы нажали инлайн-кнопку 's1b1 (Как записаться)'."""
     func.Print_LOG("Обработка inline-кнопки s1b4 (Где Вы)")
-    await call_inline.answer('Хорошо')   
-    text = "Наш адрес Щапова 47, 1 этаж, 102 офис."
+    await call_inline.answer('Хорошо')
+    text = sql.sql_read_text(3, 'message')
     await call_inline.message.answer(text) 
     await callback_inline_but_s1b1(call_inline) # прыжек на Шаг 1
 
